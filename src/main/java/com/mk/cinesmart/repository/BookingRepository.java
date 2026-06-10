@@ -20,7 +20,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUserIdOrderByBookingDateTimeDesc(Long userId);
 
     // 🔥 P2P Resale Logic: ஒரு குறிப்பிட்ட ஷோவுக்கு ரீசேல் மார்க்கெட்ல விக்க ரெடியா இருக்குற சீட்களை மட்டும் தனியா பிரிக்க
-    @Query("SELECT b FROM Booking b WHERE b.show.id = :showId AND b.status = com.cinesmart.model.BookingStatus.RESALE_LISTED")
+    @Query("SELECT b FROM Booking b WHERE b.show.id = :showId AND b.status = com.mk.cinesmart.model.BookingStatus.RESALE_LISTED")
     List<Booking> findResaleBookingsByShow(@Param("showId") Long showId);
 
     // தியேட்டர் அட்மின் டேஷ்போர்டுக்காக புக்கிங் ஸ்டேட்டஸ் வச்சு கவுண்ட் எடுக்க
