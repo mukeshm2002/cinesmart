@@ -42,8 +42,8 @@
             <div class="mb-3">
                 <label class="form-label text-muted small">Select Account Type</label>
                 <select th:field="*{role}" class="form-select bg-dark text-white border-secondary" required>
-                    <option value="USER">Standard User (Movie Goer)</option>
-                    <option value="SUPER_ADMIN">Super Admin (Theater Owner)</option>
+                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_USER}">Standard User (Movie Goer)</option>
+                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_SUPER_ADMIN}">Super Admin (Theater Owner)</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-danger w-100 fw-bold mb-3">Register</button>
