@@ -17,6 +17,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByTransactionId(String transactionId);
 
     // 📊 Admin Analytics: தியேட்டரோட மொத்த பாக்ஸ் ஆபீஸ் வசூலை கணக்கிட
-    @Query("SELECT SUM(p.totalPaidAmount) FROM Payment p WHERE p.paymentStatus = com.cinesmart.model.PaymentStatus.SUCCESS")
+    @Query("SELECT SUM(p.totalPaidAmount) FROM Payment p WHERE p.paymentStatus = com.mk.cinesmart.model.PaymentStatus.SUCCESS")
     Double calculateTotalRevenue();
 }
