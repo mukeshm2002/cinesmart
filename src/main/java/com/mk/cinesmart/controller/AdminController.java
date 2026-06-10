@@ -86,7 +86,7 @@ public class AdminController {
     }
 
     // =========================================================================
-    // SNACK INVENTORY MANAGEMENT
+    // SNACK INVENTORY MANAGEMENT - UPDATED FOR STABILITY
     // =========================================================================
     @GetMapping("/snack/add")
     public String showAddSnackForm(Model model) {
@@ -96,13 +96,15 @@ public class AdminController {
 
     @PostMapping("/snack/save")
     public String saveSnack(@ModelAttribute("snack") Snack snack,
-                            @RequestParam("snackImageFile") MultipartFile snackImageFile,
+                            @RequestParam(value = "snackImageFile", required = false) MultipartFile snackImageFile,
                             Model model) {
         try {
+            // இப்போ இமேஜ் இல்லாம சப்மிட் பண்ணாலும் ஆப் கிராஷ் ஆகாது
             snackService.saveSnack(snack, snackImageFile);
             return "redirect:/admin/dashboard?success=Snack+Added+to+Canteen";
-        } catch (IOException e) {
-            model.addAttribute("error", "Snack image upload failed: " + e.getMessage());
+        } catch (Exception e) {
+            // எர்ரர் மெசேஜை லாக் பண்ணி ஃபார்முக்கே காட்டுறோம்
+            model.addAttribute("error", "Failed to save snack: " + e.getMessage());
             return "admin/add-snack";
         }
     }
