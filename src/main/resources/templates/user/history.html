@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CineSmart - My Bookings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background-color: #1e1e1e; border-bottom: 1px solid #2d2d2d; }
+        .ticket-card { background-color: #1e1e1e; border-left: 5px solid #e50914; border-radius: 8px; }
+        .ticket-card.cancelled { border-left-color: #6c757d; opacity: 0.6; }
+        .ticket-card.resale_listed { border-left-color: #ffc107; }
+        .ticket-card.resale_sold { border-left-color: #28a745; opacity: 0.8; }
+        .badge-confirmed { background-color: #28a745; color: white; }
+        .badge-cancelled { background-color: #6c757d; color: white; }
+        .badge-resale-listed { background-color: #ffc107; color: #000; }
+        .badge-resale-sold { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark px-4 mb-4">
+    <a class="navbar-brand fw-bold text-danger fs-3" th:href="@{/user/home}">🎬 CineSmart</a>
+    <div class="ms-auto d-flex align-items-center">
+        <a th:href="@{/user/home}" class="btn btn-outline-light btn-sm me-3 fw-bold">Back to Movies</a>
+    </div>
+</nav>
+
+<div class="container mt-4" style="max-width: 800px;">
+    <h4 class="fw-bold mb-4 text-warning">🎟️ My Booking History</h4>
+
+    <div th:if="${param.success}" class="alert alert-success" th:text="${param.success}"></div>
+    <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}"></div>
+
+    <div th:if="${#lists.isEmpty(bookings)}" class="text-muted text-center my-5">
+        <h5>You haven't booked any tickets yet!</h5>
+        <a th:href="@{/user/home}" class="btn btn-danger btn-sm mt-3 fw-bold">Book Now</a>
+    </div>
+
+    <div th:each="booking : ${bookings}"
+         class="card ticket-card mb-3 p-3 shadow text-white"
+         th:classappend="${booking.status.name() == 'CANCELLED' ? 'cancelled' :
+                              (booking.status.name() == 'RESALE_LISTED' ? 'resale_listed' :
+                              (booking.status.name() == 'RESALE_SOLD' ? 'resale_sold' : ''))}">
+
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <h5 class="fw-bold text-danger mb-1" th:text="${booking.show.movie.title}">Movie Title</h5>
+                <p class="text-muted small mb-2" th:text="${booking.show.screen.screenName} + ' • ' + ${booking.show.showDate} + ' @ ' + ${booking.show.startTime}"></p>
+
+                <div class="mb-2">
+                    <span class="text-white-50 small">Seats:</span>
+                    <span class="fw-bold text-warning" th:text="${booking.selectedSeats}">R1-1, R1-2</span>
+                </div>
+
+                <div class="small">
+                    <span class="text-white-50">Booking ID:</span>
+                    <span class="font-monospace text-light" th:text="${booking.bookingId}">CS-XYZ123</span>
+                </div>
+            </div>
+
+            <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                <h4 class="fw-bold text-success mb-2" th:text="'₹' + ${booking.totalAmount}">₹360</h4>
+
+                <span class="badge p-2 mb-3 d-inline-block"
+                      th:classappend="${booking.status.name() == 'CONFIRMED' ? 'badge-confirmed' :
+                                           (booking.status.name() == 'CANCELLED' ? 'badge-cancelled' :
+                                           (booking.status.name() == 'RESALE_LISTED' ? 'badge-resale-listed' : 'badge-resale-sold'))}"
+                      th:text="${booking.status}">CONFIRMED</span>
+
+                <div th:if="${booking.status.name() == 'CONFIRMED'}" class="d-flex gap-2 justify-content-md-end">
+
+                    <form th:action="@{/user/booking/cancel/{id}(id=${booking.id})}" method="post"
+                          onsubmit="return confirm('Are you sure? You will get an instant 50% refund immediately.');">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm fw-bold">Instant 50% Cancel</button>
+                    </form>
+
+                    <form th:action="@{/user/booking/resale/list/{id}(id=${booking.id})}" method="post"
+                          onsubmit="return confirm('This will list your ticket in the marketplace. You will get a 100% refund (minus 10% platform fee) ONLY after someone buys it. Proceed?');">
+                        <button type="submit" class="btn btn-warning btn-sm text-dark fw-bold">Sell on Marketplace</button>
+                    </form>
+
+                </div>
+
+                <div th:if="${booking.status.name() == 'RESALE_LISTED'}" class="text-warning small mt-1">
+                    ⏳ Waiting for a buyer in marketplace...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

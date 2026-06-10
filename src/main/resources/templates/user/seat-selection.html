@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CineSmart - Select Seats</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
+        .screen-container { text-align: center; margin-bottom: 40px; }
+        /* தியேட்டர் ஸ்கிரீன் போன்ற வளைந்த டிசைன் */
+        .cinema-screen {
+            height: 12px; width: 70%; background: #5a96e3; margin: 0 auto;
+            border-bottom-left-radius: 50%; border-bottom-right-radius: 50%;
+            box-shadow: 0 10px 20px rgba(90, 150, 227, 0.5);
+        }
+        /* 2D Seat Layout Styling */
+        .seat-grid { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .seat-row { display: flex; gap: 10px; align-items: center; }
+        .row-label { width: 30px; font-weight: bold; color: #ffc107; text-align: center; }
+        .seat {
+            width: 32px; height: 32px; background-color: #ffffff; color: #000;
+            border-radius: 6px; font-size: 11px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            user-select: none; transition: 0.2s;
+        }
+        /* Color Mapping Rules */
+        .seat.available { background-color: #e0e0e0; color: #121212; }
+        .seat.selected { background-color: #28a745 !important; color: #fff !important; } /* Green */
+        .seat.booked { background-color: #dc3545; color: #fff; cursor: not-allowed; } /* Red */
+        .seat.resale { background-color: #ffc107; color: #000; animation: pulse 2s infinite; } /* Yellow */
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+        .legend-box { width: 18px; height: 18px; border-radius: 4px; display: inline-block; vertical-align: middle; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-8 p-4 bg-dark rounded border border-secondary shadow-lg">
+            <div class="screen-container">
+                <div class="cinema-screen mb-2"></div>
+                <small class="text-muted text-uppercase tracking-wider">All Eyes This Way (Screen)</small>
+            </div>
+
+            <div class="d-flex justify-content-center gap-4 mb-4 small text-muted">
+                <div><span class="legend-box bg-light me-1"></span> Available</div>
+                <div><span class="legend-box bg-success me-1"></span> Selected</div>
+                <div><span class="legend-box bg-danger me-1"></span> Booked 🔴</div>
+                <div><span class="legend-box bg-warning me-1"></span> P2P Resale 🟡</div>
+            </div>
+
+            <div class="seat-grid">
+                <div class="seat-row" th:each="r : ${#numbers.sequence(1, screen.totalRows)}">
+                    <span class="row-label" th:text="${'R' + r}">R1</span>
+
+                    <div class="seat available"
+                         th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}"
+                         th:with="seatNo=${'R' + r + '-' + s}"
+                         th:id="${seatNo}"
+                         th:text="${s}"
+                         onclick="toggleSeat(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 ps-md-4 mt-4 mt-md-0">
+            <div class="card bg-dark text-white border-secondary p-3 shadow mb-4">
+                <h5 class="fw-bold text-danger">Selected Seats</h5>
+                <p class="fs-4 text-warning" id="displaySeats">None</p>
+                <hr class="border-secondary">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Ticket Price:</span>
+                    <span id="ticketPrice" th:text="'₹' + ${show.basePrice}">₹0</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold fs-5 text-success">
+                    <span>Total:</span>
+                    <span id="totalAmount">₹0</span>
+                </div>
+                <button class="btn btn-success w-100 fw-bold mt-3 text-dark" onclick="goToPayment()">Add Snacks & Pay 🍿</button>
+            </div>
+
+            <div class="card bg-dark text-white border-warning p-3 shadow" style="border: 1px solid;">
+                <h5 class="fw-bold text-warning">🟡 Resale Marketplace</h5>
+                <p class="text-muted small">Skip the queue! Someone is selling their confirmed ticket with 0% price hike.</p>
+
+                <div th:if="${#lists.isEmpty(resaleBookings)}" class="text-muted small text-center my-3">
+                    No resale tickets available for this show right now.
+                </div>
+
+                <div class="list-group bg-transparent" th:each="resale : ${resaleBookings}">
+                    <div class="list-group-item bg-secondary text-white border-dark mb-2 d-flex justify-content-between align-items-center rounded">
+                        <div>
+                            <span class="d-block fw-bold text-warning" th:text="'Seats: ' + ${resale.selectedSeats}">Seats</span>
+                            <small class="text-light" th:text="'Price: ₹' + ${resale.totalAmount}"></small>
+                        </div>
+                        <form th:action="@{/user/booking/resale/buy/{id}(id=${resale.id})}" method="post">
+                            <button type="submit" class="btn btn-warning btn-sm fw-bold">Instant Buy</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const basePrice = /*[[${show.basePrice}]]*/ 0;
+    let selectedSeatsList = [];
+
+    function toggleSeat(element) {
+        // ஒருவேளை சீட் ஏற்கனவே புக் ஆகியிருந்தாலோ அல்லது ரீசேல்ல இருந்தாலோ இங்க செலக்ட் பண்ண முடியாது
+        if (element.classList.contains('booked') || element.classList.contains('resale')) {
+            return;
+        }
+
+        const seatId = element.id;
+        if (element.classList.contains('selected')) {
+            element.classList.remove('selected');
+            selectedSeatsList = selectedSeatsList.filter(id => id !== seatId);
+        } else {
+            element.classList.add('selected');
+            selectedSeatsList.push(seatId);
+        }
+
+        // UI-ல் அப்டேட் செய்தல்
+        document.getElementById('displaySeats').innerText = selectedSeatsList.length > 0 ? selectedSeatsList.join(', ') : 'None';
+        document.getElementById('totalAmount').innerText = '₹' + (selectedSeatsList.length * basePrice);
+    }
+
+    // 🍿 MODIFIED: சீட் செலக்ட் பண்ணிட்டு அடுத்த கட்டமா ஸ்நாக்ஸ் பேஜுக்கு டேட்டாவை அனுப்பும் ஜாவாஸ்கிரிப்ட் லாஜிக்
+    function goToPayment() {
+        if (selectedSeatsList.length === 0) {
+            alert("Please select at least one seat to proceed!");
+            return;
+        }
+        const showId = /*[[${show.id}]]*/ 0;
+        const seatsParam = selectedSeatsList.join(',');
+
+        // நேரா நம்ம புதுசா எழுதின UserController Snacks Endpoint-க்கு கூட்டிட்டு போகும் மாப்ள!
+        window.location.href = `/user/show/${showId}/snacks?seats=${seatsParam}`;
+    }
+
+    // 🟢 SIMULATION ON LOAD: ஏற்கனவே புக் ஆன மற்றும் ரீசேல் சீட்களை சும்மா மார்க் பண்ணி காட்ட (ரியல் டைம்ல டேட்டாபேஸ்ல இருந்து மேப் பண்ணுவோம்)
+    document.addEventListener("DOMContentLoaded", function() {
+        // எ.கா: சில சீட்களை Booked (Red) ஆகவும், சிலவற்றை Resale (Yellow) ஆகவும் மாற்றுவோம்
+        document.getElementById('R1-3')?.classList.add('booked');
+        document.getElementById('R1-4')?.classList.add('booked');
+        document.getElementById('R2-5')?.classList.add('resale'); // இத கிளிக் பண்ணா ரைட் சைடு மார்க்கետ பிளேஸ்ல வாங்கிக்கலாம்
+    });
+</script>
+</body>
+</html>

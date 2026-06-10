@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CineSmart - Schedule Show</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; }
+        .form-card { background-color: #1e1e1e; border: 1px solid #2d2d2d; border-radius: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card form-card p-4 shadow-lg">
+        <h4 class="fw-bold text-warning mb-3">🕒 Schedule Movie Show Timing</h4>
+        <p class="text-muted small mb-4">Spring Boot handles proactive showtime overlap detection automatically.</p>
+
+        <div th:if="${error}" class="alert alert-danger py-2 small" th:text="${error}"></div>
+
+        <form th:action="@{/admin/show/save}" th:object="${show}" method="post">
+
+            <div class="mb-3">
+                <label class="form-label small text-white-50">Select Movie</label>
+                <select th:field="*{movie}" class="form-select bg-dark text-white border-secondary" required>
+                    <option value="" disabled selected>Choose Movie from Catalog...</option>
+                    <option th:each="m : ${movies}" th:value="${m.id}" th:text="${m.title} + ' (' + ${m.language} + ')'"></option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small text-white-50">Allocate Theater Screen</label>
+                <select th:field="*{screen}" class="form-select bg-dark text-white border-secondary" required>
+                    <option value="" disabled selected>Choose Screen Grid layout...</option>
+                    <option th:each="s : ${screens}" th:value="${s.id}" th:text="${s.screenName} + ' (' + ${s.totalSeats} + ' Seats)'"></option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small text-white-50">Show Date</label>
+                    <input type="date" th:field="*{showDate}" class="form-control bg-dark text-white border-secondary" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small text-white-50">Start Time</label>
+                    <input type="time" th:field="*{startTime}" class="form-control bg-dark text-white border-secondary" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small text-white-50">Ticket Pricing (INR)</label>
+                <input type="number" th:field="*{basePrice}" class="form-control bg-dark text-white border-secondary" required min="50" placeholder="eg: 150">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning text-dark w-100 fw-bold">Publish Show Live</button>
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-light w-100 fw-bold">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
