@@ -7,8 +7,8 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
         .login-card { background-color: #1e1e1e; border: 1px solid #2d2d2d; border-radius: 12px; }
-        .btn-primary { background-color: #e50914; border: none; } /* Netflix Red Style */
-        .btn-primary:hover { background-color: #b81d24; }
+        .btn-danger { background-color: #e50914; border: none; } /* Netflix Red Style */
+        .btn-danger:hover { background-color: #b81d24; }
     </style>
 </head>
 <body class="d-flex align-items-center justify-content-center vh-100">
@@ -23,9 +23,11 @@
         <div th:if="${param.error}" class="alert alert-danger small py-2" role="alert">
             Invalid Email or Password!
         </div>
+
         <div th:if="${param.logout}" class="alert alert-success small py-2" role="alert">
             You have been logged out successfully.
         </div>
+
         <div th:if="${param.registered}" class="alert alert-success small py-2" role="alert">
             Registration successful! Please login here.
         </div>
@@ -33,13 +35,15 @@
         <form th:action="@{/login}" method="post">
             <div class="mb-3">
                 <label for="email" class="form-label text-muted small">Email Address</label>
-                <input type="email" class="form-control bg-dark text-white border-secondary" id="email" name="email" required placeholder="name@example.com">
+                <input type="email" class="form-control bg-dark text-white border-secondary"
+                       id="email" th:name="email" required placeholder="name@example.com">
             </div>
             <div class="mb-4">
                 <label for="password" class="form-label text-muted small">Password</label>
-                <input type="password" class="form-control bg-dark text-white border-secondary" id="password" name="password" required placeholder="••••••••">
+                <input type="password" class="form-control bg-dark text-white border-secondary"
+                       id="password" th:name="password" required placeholder="••••••••">
             </div>
-            <button type="submit" class="btn btn-primary w-100 fw-bold mb-3">Sign In</button>
+            <button type="submit" class="btn btn-danger w-100 fw-bold mb-3">Sign In</button>
         </form>
 
         <div class="text-center mt-2 small">

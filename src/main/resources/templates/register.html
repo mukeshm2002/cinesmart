@@ -39,13 +39,21 @@
                 <label class="form-label text-muted small">Password</label>
                 <input type="password" th:field="*{password}" class="form-control bg-dark text-white border-secondary" required placeholder="Create a strong password">
             </div>
-            <div class="mb-3">
+
+            <div class="mb-4">
                 <label class="form-label text-muted small">Select Account Type</label>
                 <select th:field="*{role}" class="form-select bg-dark text-white border-secondary" required>
-                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_USER}">Standard User (Movie Goer)</option>
-                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_SUPER_ADMIN}">Super Admin (Theater Owner)</option>
+                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_USER}"
+                            th:selected="${user.role == T(com.mk.cinesmart.model.UserRole).ROLE_USER}">
+                        Standard User (Movie Goer)
+                    </option>
+                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_SUPER_ADMIN}"
+                            th:selected="${user.role == T(com.mk.cinesmart.model.UserRole).ROLE_SUPER_ADMIN}">
+                        Super Admin (Theater Owner)
+                    </option>
                 </select>
             </div>
+
             <button type="submit" class="btn btn-danger w-100 fw-bold mb-3">Register</button>
         </form>
 
