@@ -47,9 +47,13 @@
                             th:selected="${user.role == T(com.mk.cinesmart.model.UserRole).ROLE_USER}">
                         Standard User (Movie Goer)
                     </option>
+                    <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_ADMIN}"
+                            th:selected="${user.role == T(com.mk.cinesmart.model.UserRole).ROLE_ADMIN}">
+                        Theater Admin (Manage Shows & Snacks)
+                    </option>
                     <option th:value="${T(com.mk.cinesmart.model.UserRole).ROLE_SUPER_ADMIN}"
                             th:selected="${user.role == T(com.mk.cinesmart.model.UserRole).ROLE_SUPER_ADMIN}">
-                        Super Admin (Theater Owner)
+                        Super Admin (Platform Owner)
                     </option>
                 </select>
             </div>
