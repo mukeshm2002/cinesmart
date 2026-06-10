@@ -1,6 +1,5 @@
 package com.mk.cinesmart.controller;
 
-
 import com.mk.cinesmart.model.Show;
 import com.mk.cinesmart.model.User;
 import com.mk.cinesmart.service.*;
@@ -34,7 +33,7 @@ public class UserController {
     @GetMapping("/home")
     public String showUserHome(Model model) {
         model.addAttribute("movies", movieService.getAllMovies());
-        return "user/home"; // templates/user/home.html
+        return "user/home";
     }
 
     // 2. MOVIE DETAIL & SHOWS - ஒரு படத்தை கிளிக் பண்ணா அதோட விபரம் மற்றும் ஷோ டைமிங்ஸ காட்ட
@@ -50,10 +49,9 @@ public class UserController {
     public String showSeatSelection(@PathVariable("showId") Long showId, Model model) {
         Show show = showService.getShowById(showId);
         model.addAttribute("show", show);
-        model.addAttribute("screen", show.getScreen()); // இத வச்சு Rows & Columns கிரிட் UI பில்ட் பண்ணுவோம்
+        model.addAttribute("screen", show.getScreen());
 
         // P2P Resale மார்க்கெட்ல மத்தவங்க விக்க வச்சிருக்க சீட்ஸ் (Yellow Seats)
-        // தியேட்டர் சீட் நார்மலா புக் பண்ண முடியாதவங்க இந்த லிஸ்ட்ல இருந்து டைரக்ட்டா வாங்கிக்கலாம்
         model.addAttribute("resaleBookings", bookingService.getResaleBookingsByShow(showId));
         return "user/seat-selection";
     }
@@ -84,9 +82,7 @@ public class UserController {
     @PostMapping("/booking/resale/buy/{originalBookingId}")
     public String buyResaledTicket(@PathVariable("originalBookingId") Long originalBookingId, Principal principal) {
         try {
-            // லாகின் பண்ணி இருக்குற கரண்ட் பையரோட (Buyer) விபரத்தை எடுக்கிறோம்
             User buyer = userService.findUserByEmail(principal.getName());
-
             bookingService.purchaseResaledTicket(originalBookingId, buyer);
             return "redirect:/user/history?success=Resale+Ticket+Purchased+Successfully!";
         } catch (Exception e) {
@@ -101,41 +97,54 @@ public class UserController {
         model.addAttribute("bookings", bookingService.getBookingsByUser(currentUser.getId()));
         return "user/history";
     }
-    // =========================================================================
-// 💳 SHOW PAYMENT GATEWAY PAGE
-// =========================================================================
+
+    // 🍿 8. SHOW CANTEEN SNACKS MENU (சீட் செலக்ட் பண்ண உடனே இங்க வரும்)
+    @GetMapping("/show/{showId}/snacks")
+    public String showSnacksMenuPage(@PathVariable("showId") Long showId,
+                                     @RequestParam("seats") String seats,
+                                     Model model) {
+        model.addAttribute("show", showService.getShowById(showId));
+        model.addAttribute("selectedSeats", seats);
+        model.addAttribute("allSnacks", snackService.getAllActiveSnacks());
+        return "user/snacks-menu";
+    }
+
+    // 💳 9. MODIFIED PAYMENT PAGE (💡 FIX: டூப்ளிகேட் நீக்கப்பட்டு ஸ்நாக்ஸ் உடன் கூடிய சிங்கிள் பேமெண்ட் பேஜ்)
     @GetMapping("/show/{showId}/payment")
     public String showPaymentPage(@PathVariable("showId") Long showId,
                                   @RequestParam("seats") String seats,
-                                  @RequestParam("amount") Double amount,
+                                  @RequestParam("ticketAmount") Double ticketAmount,
+                                  @RequestParam("snackAmount") Double snackAmount,
+                                  @RequestParam("snackDetails") String snackDetails,
                                   Model model) {
 
-        // பேமெண்ட் பேஜுக்கு தேவையான விபரங்களை மாடலில் அனுப்புகிறோம்
         model.addAttribute("show", showService.getShowById(showId));
         model.addAttribute("selectedSeats", seats);
-        model.addAttribute("totalAmount", amount);
+        model.addAttribute("ticketAmount", ticketAmount);
+        model.addAttribute("snackAmount", snackAmount);
+        model.addAttribute("snackDetails", snackDetails);
+        model.addAttribute("totalAmount", (ticketAmount + snackAmount));
 
-        return "user/payment"; // templates/user/payment.html-க்கு போகும்
+        return "user/payment";
     }
 
-    // 💳 PROCESS FINAL CONFIRMED BOOKING PAYMENT (FIXED)
+    // 💳 10. PROCESS FINAL CONFIRMED BOOKING PAYMENT
     @PostMapping("/booking/confirm")
     public String confirmBooking(@RequestParam("showId") Long showId,
                                  @RequestParam("seats") String seats,
                                  @RequestParam("amount") Double amount,
-                                 java.security.Principal principal) {
+                                 Principal principal) {
         try {
-            com.mk.cinesmart.model.User currentUser = userService.findUserByEmail(principal.getName());
-            com.mk.cinesmart.model.Show show = showService.getShowById(showId);
+            User currentUser = userService.findUserByEmail(principal.getName());
+            Show show = showService.getShowById(showId);
 
-            // 💡 FIX 2: String-ஆக வரும் "R1-1,R1-2"-ஐ List<String>-ஆக மாற்றுகிறோம்
-            java.util.List<java.lang.String> seatsList = java.util.Arrays.asList(seats.split(","));
+            List<String> seatsList = java.util.Arrays.asList(seats.split(","));
 
             // 1. புது புக்கிங் ரெக்கார்டு கிரியேட் பண்றோம்
             com.mk.cinesmart.model.Booking booking = com.mk.cinesmart.model.Booking.builder()
                     .bookingId("CS-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                     .bookingDateTime(java.time.LocalDateTime.now())
-                    .selectedSeats(seatsList) // இப்போ List-ஆ பாஸ் பண்றதுனால எர்ரர் வராது!
+                    .selectedSeats(seatsList)
                     .totalAmount(amount)
                     .status(com.mk.cinesmart.model.BookingStatus.CONFIRMED)
                     .user(currentUser)
@@ -160,34 +169,5 @@ public class UserController {
         } catch (Exception e) {
             return "redirect:/user/home?error=" + e.getMessage();
         }
-    }
-    // 🍿 1. SHOW CANTEEN SNACKS MENU (சீட் செலக்ட் பண்ண உடனே இங்க வரும்)
-    @GetMapping("/show/{showId}/snacks")
-    public String showSnacksMenuPage(@PathVariable("showId") Long showId,
-                                     @RequestParam("seats") String seats,
-                                     Model model) {
-        model.addAttribute("show", showService.getShowById(showId));
-        model.addAttribute("selectedSeats", seats);
-        model.addAttribute("allSnacks", snackService.getAllActiveSnacks()); // கேன்டீன் ஸ்நாக்ஸ் லிஸ்ட்
-        return "user/snacks-menu"; // templates/user/snacks-menu.html
-    }
-
-    // 💳 2. MODIFIED PAYMENT PAGE (ஸ்நாக்ஸ் விபரங்கள் மற்றும் டோட்டல் அமௌன்ட்டோடு வரும்)
-    @GetMapping("/show/{showId}/payment")
-    public String showPaymentPage(@PathVariable("showId") Long showId,
-                                  @RequestParam("seats") String seats,
-                                  @RequestParam("ticketAmount") Double ticketAmount,
-                                  @RequestParam("snackAmount") Double snackAmount,
-                                  @RequestParam("snackDetails") String snackDetails,
-                                  Model model) {
-
-        model.addAttribute("show", showService.getShowById(showId));
-        model.addAttribute("selectedSeats", seats);
-        model.addAttribute("ticketAmount", ticketAmount);
-        model.addAttribute("snackAmount", snackAmount);
-        model.addAttribute("snackDetails", snackDetails);
-        model.addAttribute("totalAmount", (ticketAmount + snackAmount)); // டிக்கெட் + ஸ்நாக்ஸ் மொத்த காசு
-
-        return "user/payment";
     }
 }
