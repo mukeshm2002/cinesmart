@@ -98,12 +98,19 @@ public class UserController {
         return "user/history";
     }
 
-    // 🍿 8. SHOW CANTEEN SNACKS MENU (சீட் செலக்ட் பண்ண உடனே இங்க வரும்)
+    // 🍿 8. SHOW CANTEEN SNACKS MENU
     @GetMapping("/show/{showId}/snacks")
     public String showSnacksMenuPage(@PathVariable("showId") Long showId,
                                      @RequestParam("seats") String seats,
                                      Model model) {
-        model.addAttribute("show", showService.getShowById(showId));
+        Show show = showService.getShowById(showId);
+
+        // 💡 இங்க ஒரு குட்டி செக்!
+        if (show == null) {
+            return "redirect:/user/home?error=Show+Not+Found";
+        }
+
+        model.addAttribute("show", show);
         model.addAttribute("selectedSeats", seats);
         model.addAttribute("allSnacks", snackService.getAllActiveSnacks());
         return "user/snacks-menu";
@@ -170,4 +177,5 @@ public class UserController {
             return "redirect:/user/home?error=" + e.getMessage();
         }
     }
+
 }
