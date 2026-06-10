@@ -131,8 +131,11 @@
 
         const snackDetailsParam = snackStrings.length > 0 ? snackStrings.join(', ') : 'None';
 
-        // நேரா மாடிஃபை பண்ணின பேமெண்ட் எண்ட்-பாயிண்ட்டுக்கு டேட்டாவை புஷ் பண்றோம் மாப்ள!
-        window.location.href = `/user/show/${showId}/payment?seats=${seats}&ticketAmount=${ticketTotalAmount}&snackAmount=${snackTotal}&snackDetails=${snackDetailsParam}`;
+        // 💡 இங்க தான் மேட்டர்! encodeURIComponent யூஸ் பண்ணுங்க
+        const encodedSeats = encodeURIComponent(seats);
+        const encodedSnacks = encodeURIComponent(snackDetailsParam);
+
+        window.location.href = `/user/show/${showId}/payment?seats=${encodedSeats}&ticketAmount=${ticketTotalAmount}&snackAmount=${snackTotal}&snackDetails=${encodedSnacks}`;
     }
 
     // இனிஷியல் லோடுல டிக்கெட் பிரைஸ் மட்டும் காட்டும்

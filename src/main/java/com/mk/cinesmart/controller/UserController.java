@@ -98,19 +98,16 @@ public class UserController {
         return "user/history";
     }
 
-    // 🍿 8. SHOW CANTEEN SNACKS MENU
+    // 8. 🍿 SHOW CANTEEN SNACKS MENU
     @GetMapping("/show/{showId}/snacks")
     public String showSnacksMenuPage(@PathVariable("showId") Long showId,
-                                     @RequestParam("seats") String seats,
+                                     @RequestParam(value = "seats", required = true) String seats, // value ஆட் பண்ணுங்க
                                      Model model) {
         Show show = showService.getShowById(showId);
-
-        // 💡 இங்க ஒரு குட்டி செக்!
-        if (show == null) {
-            return "redirect:/user/home?error=Show+Not+Found";
-        }
+        if (show == null) return "redirect:/user/home?error=Show+Not+Found";
 
         model.addAttribute("show", show);
+        // இங்க ஏதாவது பார்மட்டிங் தேவைப்பட்டா பண்ணுங்க
         model.addAttribute("selectedSeats", seats);
         model.addAttribute("allSnacks", snackService.getAllActiveSnacks());
         return "user/snacks-menu";
@@ -121,11 +118,19 @@ public class UserController {
     public String showPaymentPage(@PathVariable("showId") Long showId,
                                   @RequestParam("seats") String seats,
                                   @RequestParam("ticketAmount") Double ticketAmount,
-                                  @RequestParam("snackAmount") Double snackAmount,
-                                  @RequestParam("snackDetails") String snackDetails,
+                                  // 💡 ஸ்நாக்ஸ் வாங்கலைனாலும் எர்ரர் வராது (Default values)
+                                  @RequestParam(value = "snackAmount", defaultValue = "0.0") Double snackAmount,
+                                  @RequestParam(value = "snackDetails", defaultValue = "None") String snackDetails,
                                   Model model) {
 
-        model.addAttribute("show", showService.getShowById(showId));
+        Show show = showService.getShowById(showId);
+
+        // 💡 ஷோ இல்லையென்றால் ஹோம் பேஜுக்கு அனுப்பிடுங்க
+        if (show == null) {
+            return "redirect:/user/home?error=Show+Expired";
+        }
+
+        model.addAttribute("show", show);
         model.addAttribute("selectedSeats", seats);
         model.addAttribute("ticketAmount", ticketAmount);
         model.addAttribute("snackAmount", snackAmount);
