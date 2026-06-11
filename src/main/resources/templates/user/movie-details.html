@@ -55,8 +55,10 @@
                         <small class="text-muted d-block" th:text="${show.showDate}"></small>
 
                         <h4 class="fw-bold my-2"
+                            th:if="${show.startTime != null}"
                             th:text="${#temporals.format(T(java.time.LocalTime).parse(show.startTime), 'hh:mm a')}">
                         </h4>
+                        <h4 class="fw-bold my-2" th:if="${show.startTime == null}">--:--</h4>
 
                         <div class="badge-price" th:text="'₹' + ${show.basePrice}"></div>
 
