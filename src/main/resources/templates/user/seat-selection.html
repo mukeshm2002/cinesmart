@@ -21,13 +21,12 @@
             cursor: pointer; transition: 0.2s; font-size: 0.7rem; font-weight: 600;
         }
         .seat:hover:not(.booked) { border-color: #e50914; }
-        /* செலக்ட் பண்ணா அழகா தெரிய */
-        .seat.selected { background: #e50914 !important; border: 2px solid #ff0a16 !important; transform: scale(1.05); }
+        .seat.selected { background: #e50914 !important; border: 1px solid #ff0a16; transform: scale(1.1); }
         .seat.booked { background: #222; opacity: 0.3; cursor: not-allowed; border: none; }
 
         /* Resale Pulse Effect */
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
             70% { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
         }
@@ -91,26 +90,28 @@
     let totalAmount = 0;
 
     function toggleSeat(element) {
+        // ஜஸ்ட் இன் கேஸ், booked சீட் கிளிக் ஆனா தடுக்க
         if (element.classList.contains('booked')) return;
 
         const isResale = element.classList.contains('resale');
-        const seatPrice = isResale ? (basePrice + resalePremium) : basePrice;
+        const price = isResale ? (basePrice + resalePremium) : basePrice;
 
         if (element.classList.contains('selected')) {
             element.classList.remove('selected');
             selectedSeatsList = selectedSeatsList.filter(id => id !== element.id);
-            totalAmount -= seatPrice;
+            totalAmount -= price;
         } else {
             if (selectedSeatsList.length >= 5) return alert("Max 5 seats allowed!");
             element.classList.add('selected');
             selectedSeatsList.push(element.id);
-            totalAmount += seatPrice;
+            totalAmount += price;
         }
 
+        // Update UI
         document.getElementById('displaySeats').innerText = selectedSeatsList.length > 0 ? selectedSeatsList.join(', ') : '--';
         document.getElementById('totalAmount').innerText = '₹' + totalAmount;
 
-        // Re-check for any resale seats in the list to toggle the alert
+        // Show/Hide Resale Alert
         const hasResale = selectedSeatsList.some(id => document.getElementById(id).classList.contains('resale'));
         document.getElementById('resale-note').classList.toggle('d-none', !hasResale);
     }
