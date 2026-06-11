@@ -88,8 +88,7 @@
             </thead>
             <tbody>
             <tr th:each="snack : ${allSnacks}">
-                <td class="fw-bold" th:text="${snack.itemName}">Item</td>
-                <td th:text="'₹' + ${snack.price}">₹0</td>
+                <td class="fw-bold" th:text="${snack.itemName}">Item Name</td> <td th:text="'₹' + ${snack.price}">₹0</td>
                 <td th:text="${snack.availableStock}" th:classappend="${snack.availableStock <= 10 ? 'text-danger fw-bold' : ''}">0</td>
                 <td>
                     <span th:if="${snack.availableStock <= 10}" class="badge bg-danger">Low Stock</span>
