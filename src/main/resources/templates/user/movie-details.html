@@ -10,17 +10,13 @@
 
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
-
         .poster-img { border-radius: 20px; transition: 0.5s; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 100%; }
-
         .synopsis-box { background: rgba(255,255,255,0.03); padding: 25px; border-radius: 20px; border-left: 4px solid #e50914; }
-
         .showtime-card {
             background: #111; border: 1px solid #222; border-radius: 15px; padding: 20px; width: 160px;
             transition: 0.4s; text-decoration: none; color: white;
         }
         .showtime-card:hover { border-color: #e50914; transform: translateY(-5px); background: #000; }
-
         .badge-price { color: #ffc107; font-weight: 700; font-size: 0.9rem; margin-bottom: 10px;}
         .btn-book { background: #e50914; color: white; font-weight: 600; border-radius: 8px; border: none; padding: 8px 0; width: 100%; transition: 0.3s; }
         .btn-book:hover { background: #ff0a16; }
@@ -59,7 +55,7 @@
                         <small class="text-muted d-block" th:text="${show.showDate}"></small>
 
                         <h4 class="fw-bold my-2"
-                            th:text="${T(java.time.LocalTime).parse(show.startTime).format(T(java.time.format.DateTimeFormatter).ofPattern('hh:mm a'))}">
+                            th:text="${#temporals.format(T(java.time.LocalTime).parse(show.startTime), 'hh:mm a')}">
                         </h4>
 
                         <div class="badge-price" th:text="'₹' + ${show.basePrice}"></div>
