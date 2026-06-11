@@ -2,84 +2,72 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>CineSmart - Select Seats</title>
+    <title>CineSmart | Select Seats</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
-        .screen-container { text-align: center; margin-bottom: 40px; }
-        .cinema-screen { height: 12px; width: 70%; background: #5a96e3; margin: 0 auto; border-bottom-left-radius: 50%; border-bottom-right-radius: 50%; box-shadow: 0 10px 20px rgba(90, 150, 227, 0.5); }
-        .seat-grid { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .seat-row { display: flex; gap: 10px; align-items: center; }
-        .row-label { width: 30px; font-weight: bold; color: #ffc107; text-align: center; }
-        .seat { width: 32px; height: 32px; background-color: #e0e0e0; color: #121212; border-radius: 6px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: 0.2s; }
+        body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
 
-        /* Status Colors */
-        .seat.selected { background-color: #28a745 !important; color: #fff !important; }
-        .seat.booked { background-color: #dc3545 !important; color: #fff !important; cursor: not-allowed; }
-        .seat.resale { background-color: #ffc107 !important; color: #000 !important; animation: pulse 2s infinite; }
+        /* Entrance/Exit Signs */
+        .theatre-room { background: #111; border: 1px solid #222; padding: 40px; border-radius: 20px; }
+        .door-sign { color: #555; font-size: 0.7rem; letter-spacing: 2px; border: 1px solid #333; padding: 5px; border-radius: 4px; }
 
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); } }
-        .legend-box { width: 18px; height: 18px; border-radius: 4px; display: inline-block; vertical-align: middle; }
+        /* Screen */
+        .cinema-screen { height: 10px; width: 60%; background: #fff; margin: 0 auto 50px auto;
+                         box-shadow: 0 0 50px #fff; border-radius: 50%; }
+
+        /* Seat Grid with Aisles */
+        .seat-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
+        .seat { width: 35px; height: 35px; background: #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 0.7rem; }
+
+        /* Gap for Aisle (Entrance/Exit logic) */
+        .aisle { width: 40px; }
+
+        .seat.selected { background: #e50914 !important; transform: scale(1.1); }
+        .seat.booked { background: #333; cursor: not-allowed; opacity: 0.4; }
+        .seat.resale { background: #ffc107; color: #000; animation: pulse 2s infinite; }
     </style>
 </head>
 <body>
 
-<div class="container mt-5 mb-5">
+<div class="container py-5">
     <div class="row">
-        <div class="col-md-8 p-4 bg-dark rounded border border-secondary shadow-lg">
-            <div class="screen-container">
-                <div class="cinema-screen mb-2"></div>
-                <small class="text-muted text-uppercase tracking-wider">All Eyes This Way</small>
-            </div>
-
-            <div class="d-flex justify-content-center gap-4 mb-4 small text-muted">
-                <div><span class="legend-box" style="background: #e0e0e0;"></span> Available</div>
-                <div><span class="legend-box bg-success"></span> Selected</div>
-                <div><span class="legend-box bg-danger"></span> Booked</div>
-                <div><span class="legend-box bg-warning"></span> Resale</div>
-            </div>
+        <div class="col-lg-8 theatre-room">
+            <div class="cinema-screen"></div>
 
             <div class="seat-grid">
                 <div class="seat-row" th:each="r : ${#numbers.sequence(1, screen.totalRows)}">
-                    <span class="row-label" th:text="${'R' + r}">R1</span>
-                    <div class="seat"
-                         th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}"
-                         th:with="seatNo=${'R' + r + '-' + s}"
-                         th:id="${seatNo}"
-                         th:text="${s}"
-                         th:classappend="${bookedSeats != null && #lists.contains(bookedSeats, seatNo)} ? 'booked' : (${resaleSeats != null && #lists.contains(resaleSeats, seatNo)} ? 'resale' : 'available')"
-                         onclick="toggleSeat(this)">
+                    <span class="row-label text-secondary me-3" th:text="${'Row ' + r}"></span>
+
+                    <div th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}"
+                         th:with="seatNo=${'R' + r + '-' + s}">
+
+                        <div th:if="${s == (screen.seatsPerRow / 2 + 1)}" class="aisle"></div>
+
+                        <div class="seat"
+                             th:id="${seatNo}"
+                             th:text="${s}"
+                             th:classappend="${bookedSeats != null && #lists.contains(bookedSeats, seatNo)} ? 'booked' : (${resaleSeats != null && #lists.contains(resaleSeats, seatNo)} ? 'resale' : 'available')"
+                             onclick="toggleSeat(this)">
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="mt-4 d-flex justify-content-between">
+                <span class="door-sign">ENTRANCE</span>
+                <span class="door-sign">EXIT</span>
             </div>
         </div>
 
-        <div class="col-md-4 ps-md-4 mt-4 mt-md-0">
-            <div class="card bg-dark text-white border-secondary p-3 shadow mb-4">
-                <h5 class="fw-bold text-danger">Selected Seats</h5>
-                <p class="fs-4 text-warning" id="displaySeats">None</p>
-                <hr class="border-secondary">
-                <div class="d-flex justify-content-between fw-bold fs-5 text-success">
-                    <span>Total:</span>
-                    <span id="totalAmount">₹0</span>
+        <div class="col-lg-4">
+            <div class="card bg-dark text-white border-0 p-4 rounded-4">
+                <h4 class="fw-bold">Your Selection</h4>
+                <div class="display-1 text-danger" id="displaySeats">--</div>
+                <div class="d-flex justify-content-between mt-3">
+                    <span>Total Amount:</span>
+                    <h5 id="totalAmount" class="fw-bold">₹0</h5>
                 </div>
-                <button class="btn btn-success w-100 fw-bold mt-3 text-dark" onclick="goToPayment()">Add Snacks & Pay 🍿</button>
-            </div>
-
-            <div class="card bg-dark text-white border-warning p-3 shadow">
-                <h5 class="fw-bold text-warning">🟡 Resale Marketplace</h5>
-                <div th:if="${resaleBookings == null or #lists.isEmpty(resaleBookings)}" class="text-muted small text-center my-3">No resale tickets available.</div>
-                <div class="list-group bg-transparent" th:each="resale : ${resaleBookings}">
-                    <div class="list-group-item bg-secondary text-white border-dark mb-2 d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="d-block fw-bold" th:text="'Seats: ' + ${resale.selectedSeats}"></span>
-                            <small class="text-light" th:text="'₹' + ${resale.totalAmount}"></small>
-                        </div>
-                        <form th:action="@{/user/booking/resale/buy/{id}(id=${resale.id})}" method="post">
-                            <button type="submit" class="btn btn-warning btn-sm">Buy</button>
-                        </form>
-                    </div>
-                </div>
+                <button class="btn btn-danger w-100 py-3 mt-4 fw-bold" onclick="goToPayment()">PROCEED TO SNACKS</button>
             </div>
         </div>
     </div>
@@ -92,20 +80,19 @@
     function toggleSeat(element) {
         if (element.classList.contains('booked') || element.classList.contains('resale')) return;
 
-        const seatId = element.id;
         if (element.classList.contains('selected')) {
             element.classList.remove('selected');
-            selectedSeatsList = selectedSeatsList.filter(id => id !== seatId);
+            selectedSeatsList = selectedSeatsList.filter(id => id !== element.id);
         } else {
             element.classList.add('selected');
-            selectedSeatsList.push(seatId);
+            selectedSeatsList.push(element.id);
         }
-        document.getElementById('displaySeats').innerText = selectedSeatsList.length > 0 ? selectedSeatsList.join(', ') : 'None';
+        document.getElementById('displaySeats').innerText = selectedSeatsList.length > 0 ? selectedSeatsList.join(', ') : '--';
         document.getElementById('totalAmount').innerText = '₹' + (selectedSeatsList.length * basePrice);
     }
 
     function goToPayment() {
-        if (selectedSeatsList.length === 0) return alert("Please select a seat!");
+        if (selectedSeatsList.length === 0) return alert("Select a seat!");
         const showId = /*[[${show.id}]]*/ 0;
         window.location.href = `/user/show/${showId}/snacks?seats=${selectedSeatsList.join(',')}`;
     }

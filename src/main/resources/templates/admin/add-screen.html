@@ -2,44 +2,61 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>CineSmart - Configure Screen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Configure Screen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; }
-        .form-card { background-color: #1e1e1e; border: 1px solid #2d2d2d; border-radius: 12px; }
+        body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
+
+        .form-card {
+            background: #111; border: 1px solid #222; border-radius: 20px;
+            padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .form-control {
+            background: #1a1a1a !important; border: 1px solid #333; color: white !important;
+            border-radius: 10px; padding: 12px;
+        }
+        .form-control:focus { border-color: #0dcaf0; box-shadow: none; }
+
+        label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+
+        .btn-build { background: #0dcaf0; color: #000; padding: 12px; border-radius: 10px; font-weight: 700; transition: 0.3s; }
+        .btn-build:hover { background: #08aed9; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-<div class="container mt-5" style="max-width: 550px;">
-    <div class="card form-card p-4 shadow-lg">
-        <h4 class="fw-bold text-info mb-3">📺 Configure New Theater Screen</h4>
-        <p class="text-muted small mb-4">Set up your 2D Matrix Row & Seats Grid Engine.</p>
+<div class="container py-5" style="max-width: 550px;">
+    <div class="card form-card">
+        <h3 class="fw-bold mb-4 text-info">📺 Configure Theater Screen</h3>
 
-        <div th:if="${error}" class="alert alert-danger py-2 small" th:text="${error}"></div>
+        <div th:if="${error}" class="alert alert-danger bg-transparent border-danger text-danger" th:text="${error}"></div>
 
         <form th:action="@{/admin/screen/save}" th:object="${screen}" method="post">
-            <div class="mb-3">
-                <label class="form-label small text-white-50">Screen Name</label>
-                <input type="text" th:field="*{screenName}" class="form-control bg-dark text-white border-secondary" required placeholder="eg: Screen 1 (IMAX)">
+
+            <div class="mb-4">
+                <label>Screen Name</label>
+                <input type="text" th:field="*{screenName}" class="form-control" required placeholder="Ex: Screen 1 - IMAX">
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small text-white-50">Total Rows</label>
-                    <input type="number" th:field="*{totalRows}" class="form-control bg-dark text-white border-secondary" required min="1" max="26" placeholder="eg: 10">
-                    <div class="form-text text-muted small">Vertical Grid (A-Z Map)</div>
+                <div class="col-md-6 mb-4">
+                    <label>Total Rows</label>
+                    <input type="number" th:field="*{totalRows}" class="form-control" required min="1" max="26" placeholder="Ex: 10">
+                    <small class="text-secondary mt-2 d-block">Vertical grid size</small>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small text-white-50">Seats Per Row</label>
-                    <input type="number" th:field="*{seatsPerRow}" class="form-control bg-dark text-white border-secondary" required min="1" max="30" placeholder="eg: 12">
-                    <div class="form-text text-muted small">Horizontal Columns Count</div>
+                <div class="col-md-6 mb-4">
+                    <label>Seats Per Row</label>
+                    <input type="number" th:field="*{seatsPerRow}" class="form-control" required min="1" max="30" placeholder="Ex: 12">
+                    <small class="text-secondary mt-2 d-block">Horizontal columns count</small>
                 </div>
             </div>
 
-            <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-info text-dark w-100 fw-bold">Build Screen Layout</button>
-                <a th:href="@{/admin/dashboard}" class="btn btn-outline-light w-100 fw-bold">Back</a>
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn btn-build w-100">Build Layout</button>
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary w-100">Cancel</a>
             </div>
         </form>
     </div>

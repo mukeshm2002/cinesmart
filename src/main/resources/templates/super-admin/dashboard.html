@@ -2,52 +2,72 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Super Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CineSmart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; }
-        .table-dark { background-color: #1e1e1e; border: 1px solid #2d2d2d; }
+        body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
+
+        .dashboard-container { background: #111; border-radius: 25px; padding: 30px; border: 1px solid #222; }
+
+        /* Table Styling */
+        .table { color: #fff; border-collapse: separate; border-spacing: 0 10px; }
+        .table thead th { border: none; color: #666; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .table tbody tr { background: #1a1a1a; transition: 0.3s; }
+        .table tbody tr:hover { background: #222; }
+        .table td { border: none; padding: 20px; }
+
+        /* Buttons */
+        .btn-add { background: #e50914; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 700; }
+        .btn-delete { background: transparent; border: 1px solid #444; color: #ff4d4d; border-radius: 8px; font-size: 0.8rem; }
+        .btn-delete:hover { background: #ff4d4d; color: white; }
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-danger">🛡️ Super Admin Control Center</h2>
-        <a th:href="@{/super-admin/movie/add}" class="btn btn-success fw-bold">+ Add New Movie</a>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold">Admin Control Center</h2>
+            <p class="text-secondary">Manage your movies and catalogue.</p>
+        </div>
+        <a th:href="@{/super-admin/movie/add}" class="btn btn-add">+ Add Movie</a>
     </div>
 
-    <div th:if="${param.success}" class="alert alert-success py-2" th:text="${param.success}"></div>
-    <div th:if="${param.deleted}" class="alert alert-warning py-2" th:text="${param.deleted}"></div>
+    <div th:if="${param.success}" class="alert alert-success bg-transparent border-success text-success mb-4" th:text="${param.success}"></div>
 
-    <div class="card bg-dark border-secondary p-3">
-        <h5 class="fw-bold text-warning mb-3">Global Movie Master List</h5>
-        <table class="table table-dark table-striped align-middle">
+    <div class="dashboard-container shadow-lg">
+        <table class="table align-middle">
             <thead>
             <tr>
                 <th>Poster</th>
-                <th>Title</th>
+                <th>Movie Title</th>
                 <th>Genre</th>
                 <th>Language</th>
                 <th>Duration</th>
-                <th>Actions</th>
+                <th class="text-end">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="movie : ${movies}">
-                <td><img th:src="${movie.posterUrl}" width="50" class="rounded shadow-sm" alt="Poster"></td>
-                <td class="fw-bold" th:text="${movie.title}"></td>
-                <td th:text="${movie.genre}"></td>
-                <td th:text="${movie.language}"></td>
-                <td th:text="${movie.durationInMinutes} + ' mins'"></td>
                 <td>
+                    <img th:src="${movie.posterUrl}" width="60" class="rounded-3 shadow" style="object-fit: cover;">
+                </td>
+                <td class="fw-bold" th:text="${movie.title}"></td>
+                <td class="text-secondary" th:text="${movie.genre}"></td>
+                <td class="text-secondary" th:text="${movie.language}"></td>
+                <td class="text-secondary" th:text="${movie.durationInMinutes} + ' mins'"></td>
+                <td class="text-end">
                     <a th:href="@{/super-admin/movie/delete/{id}(id=${movie.id})}"
-                       class="btn btn-danger btn-sm fw-bold"
-                       onclick="return confirm('Are you sure you want to delete this movie? It will cascade to all active shows!');">Delete</a>
+                       class="btn btn-delete px-3"
+                       onclick="return confirm('Delete this movie?');">Remove</a>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
 </div>
+
 </body>
 </html>

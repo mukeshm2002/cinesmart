@@ -1,84 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <link th:href="@{https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css}" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment | CineSmart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
 
-        .payment-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .payment-container { max-width: 500px; margin: 80px auto; }
+
+        .card-payment {
+            background: #111; border: 1px solid #222; border-radius: 25px;
+            padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .header-text { color: #28a745; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        .header-text { font-weight: 700; margin-bottom: 30px; }
 
-        .summary-box {
-            background: #252525;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
+        .summary-box { background: #0a0a0a; padding: 20px; border-radius: 15px; border: 1px solid #1a1a1a; }
 
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .total-row {
-            font-size: 1.4rem;
-            color: #ffc107;
-            font-weight: bold;
-            border-top: 1px solid #444;
-            padding-top: 10px;
-        }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: #aaa; }
+        .total-row { font-size: 1.5rem; color: #fff; font-weight: 700; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
 
         .btn-pay {
-            background-color: #28a745;
-            color: #000;
-            font-weight: bold;
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            transition: 0.3s;
+            background: #e50914; color: white; font-weight: 700; border-radius: 12px;
+            padding: 15px; width: 100%; border: none; transition: 0.3s; margin-top: 20px;
         }
+        .btn-pay:hover { background: #ff0a16; transform: translateY(-3px); }
 
-        .btn-pay:hover { background-color: #218838; color: #fff; }
+        .lock-icon { color: #28a745; margin-right: 8px; }
     </style>
 </head>
 <body>
-<div class="payment-container">
-    <h2 class="header-text">Confirm Your Booking</h2>
 
-    <div class="summary-box">
-        <div class="detail-row"><span>Seats:</span> <span th:text="${selectedSeats}"></span></div>
-        <div class="detail-row"><span>Ticket Price:</span> <span>₹<span th:text="${ticketAmount}"></span></span></div>
-        <div class="detail-row"><span>Snacks:</span> <span>₹<span th:text="${snackAmount}"></span></span></div>
-        <div class="detail-row" style="font-size: 0.9rem; color: #aaa;">
-            <span>Details:</span> <span th:text="${snackDetails}"></span>
+<div class="container payment-container">
+    <div class="card-payment">
+        <h3 class="header-text text-center">Checkout</h3>
+
+        <div class="summary-box">
+            <div class="detail-row"><span>Movie:</span> <span class="text-white" th:text="${show.movie.title}"></span></div>
+            <div class="detail-row"><span>Seats:</span> <span class="text-white" th:text="${selectedSeats}"></span></div>
+            <div class="detail-row"><span>Tickets:</span> <span>₹<span th:text="${ticketAmount}"></span></span></div>
+            <div class="detail-row" th:if="${snackAmount > 0}">
+                <span>Snacks:</span> <span>₹<span th:text="${snackAmount}"></span></span>
+            </div>
+
+            <div class="detail-row total-row">
+                <span>Total</span> <span>₹<span th:text="${totalAmount}"></span></span>
+            </div>
         </div>
 
-        <div class="detail-row total-row">
-            <span>Total Pay:</span> <span>₹<span th:text="${totalAmount}"></span></span>
-        </div>
+        <form th:action="@{/user/booking/confirm}" method="post">
+            <input type="hidden" name="showId" th:value="${show.id}">
+            <input type="hidden" name="seats" th:value="${selectedSeats}">
+            <input type="hidden" name="amount" th:value="${totalAmount}">
+
+            <button type="submit" class="btn-pay">
+                Pay Securely ₹<span th:text="${totalAmount}"></span>
+            </button>
+        </form>
+
+        <p class="text-center text-muted small mt-3">
+            <i class="lock-icon">🔒</i> 100% Secure Payment powered by CineSmart
+        </p>
     </div>
-
-    <form th:action="@{/user/booking/confirm}" method="post">
-        <input type="hidden" name="showId" th:value="${show.id}">
-        <input type="hidden" name="seats" th:value="${selectedSeats}">
-        <input type="hidden" name="amount" th:value="${totalAmount}">
-
-        <button type="submit" class="btn-pay">Pay & Confirm Booking 🔒</button>
-    </form>
 </div>
+
 </body>
 </html>
