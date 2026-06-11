@@ -31,13 +31,20 @@ public class AdminController {
     @Autowired
     private PaymentService paymentService;
 
-    // 1. THEATER ADMIN DASHBOARD - அனலிடிக்ஸ் மற்றும் மொத்த வருமானத்தை காட்ட
     @GetMapping("/dashboard")
     public String showAdminDashboard(Model model) {
-        model.addAttribute("totalRevenue", paymentService.getTotalRevenue());
-        model.addAttribute("screens", screenService.getAllScreens());
-        model.addAttribute("lowStockSnacks", snackService.getLowStockAlerts());
-        return "admin/dashboard"; // templates/admin/dashboard.html
+        try {
+            model.addAttribute("totalRevenue", paymentService.getTotalRevenue());
+            model.addAttribute("screens", screenService.getAllScreens());
+            model.addAttribute("allSnacks", snackService.getAllSnacks());
+            model.addAttribute("totalSnacksSold", snackService.getTotalSnacksSoldToday());
+            model.addAttribute("lowStockSnacks", snackService.getLowStockAlerts());
+        } catch (Exception e) {
+            // எர்ரர் வந்தா அதை லாக் பண்ணிட்டு எம்டி லிஸ்ட் கொடுங்க
+            model.addAttribute("error", "Data load failed: " + e.getMessage());
+            model.addAttribute("screens", new java.util.ArrayList<>());
+        }
+        return "admin/dashboard";
     }
 
     // =========================================================================

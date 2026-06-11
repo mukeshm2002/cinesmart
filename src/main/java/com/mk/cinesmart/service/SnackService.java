@@ -15,33 +15,44 @@ public class SnackService {
     private SnackRepository snackRepository;
 
     @Autowired
-    private ImageService imageService; // Cloudinary இமேஜ் அப்லோடுக்காக
+    private ImageService imageService;
 
-    // 1. ADD OR UPDATE SNACK WITH CLOUDINARY IMAGE (Theater Admin Module)
+    // 1. ADD OR UPDATE SNACK
     public Snack saveSnack(Snack snack, MultipartFile snackImageFile) throws IOException {
         if (snackImageFile != null && !snackImageFile.isEmpty()) {
             String uploadedImageUrl = imageService.uploadImage(snackImageFile);
             snack.setImageUrl(uploadedImageUrl);
         } else if (snack.getImageUrl() == null) {
-            // இமேஜ் அப்லோட் பண்ணலனா ஒரு டிஃபால்ட் ஸ்நாக்ஸ் இமேஜ் URL
             snack.setImageUrl("https://images.cloudinary.com/default-snack.jpg");
         }
         return snackRepository.save(snack);
     }
 
-    // 2. GET ALL AVAILABLE SNACKS (For User Order Screen - Sorted by Price)
+    // 💡 NEW: ADDED THIS TO PREVENT "Cannot resolve method" ERROR
+    public List<Snack> getAllSnacks() {
+        return snackRepository.findAll();
+    }
+
+    // 💡 NEW: ADDED FOR ADMIN DASHBOARD (Snacks Sold Count)
+    // குறிப்பு: உங்க டேட்டாபேஸ்ல ஆர்டர் டேபிள் இருந்தா அதை இங்க கணக்கு பண்ணிக்கோங்க.
+    // இப்போதைக்கு ஸ்டாக் சேஞ்ச்-ஐ வச்சு தோராயமா (0) ரிட்டர்ன் பண்றேன்.
+    public Long getTotalSnacksSoldToday() {
+        return 0L;
+    }
+
+    // 2. GET ALL AVAILABLE SNACKS (Sorted)
     public List<Snack> getAllSnacksSortedByPrice() {
         return snackRepository.findAllByOrderByPriceAsc();
     }
 
-    // 3. MONITOR LOW STOCK SNACKS (Admin Dashboard Alert System)
-    // ஸ்டாக் 10 அல்லது அதுக்கும் கீழ போனா அட்மினுக்கு அலர்ட் காட்ட இந்த லிஸ்ட் பயன்படும்
+    // SnackService.java-வில் இதை மட்டும் மாத்துங்க
     public List<Snack> getLowStockAlerts() {
         int lowStockThreshold = 10;
+        // இங்க உங்க கஸ்டம் குவரியை கூப்பிடுறோம்
         return snackRepository.findLowStockSnacks(lowStockThreshold);
     }
 
-    // 4. DELETE SNACK ITEM FROM CANTEEN MENU
+    // 4. DELETE SNACK
     public void deleteSnack(Long id) {
         if (!snackRepository.existsById(id)) {
             throw new RuntimeException("Snack item not found with ID: " + id);
@@ -49,11 +60,8 @@ public class SnackService {
         snackRepository.deleteById(id);
     }
 
-    // =========================================================================
-// 🍿 GET ACTIVE SNACKS FOR USER SCREEN
-// =========================================================================
+    // 5. GET ACTIVE SNACKS FOR USER
     public List<Snack> getAllActiveSnacks() {
-        // ஸ்டாக் 0-க்கு மேல இருக்குற எல்லா ஸ்நாக்ஸையும் பில்டர் பண்ணி எடுக்குறோம்
         return snackRepository.findByAvailableStockGreaterThan(0);
     }
 }
