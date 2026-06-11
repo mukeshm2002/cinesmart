@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,11 +40,25 @@ public class UserController {
 
     @GetMapping("/movie/{id}")
     public String showMovieDetails(@PathVariable("id") Long id, Model model) {
-        model.addAttribute("movie", movieService.getMovieById(id));
+        // 1. Movie இருக்கான்னு செக் பண்ணுங்க
+        var movie = movieService.getMovieById(id);
+        if (movie == null) return "redirect:/user/home?error=Movie+Not+Found";
 
-        // இங்க உங்க சர்வீஸ் ஷோ லிஸ்ட்டை கொடுக்கும்போது அதுல availableSeats இருக்கான்னு உறுதி பண்ணிக்கோங்க
+        model.addAttribute("movie", movie);
+
+        // 2. ஷோஸ் லிஸ்ட் எடுங்க
         List<Show> shows = showService.getUpcomingShowsForMovie(id);
-        model.addAttribute("shows", shows);
+
+        // 💡 இங்க தான் முக்கியமானது: ஷோஸ் லிஸ்ட்டை ஃபில்டர் பண்ணுங்க
+        // ஷோ, மூவி, ஸ்கிரீன் எதுவுமே null-ஆ இல்லாததை மட்டும் அனுப்புங்க
+        if (shows != null) {
+            List<Show> validShows = shows.stream()
+                    .filter(s -> s != null && s.getMovie() != null && s.getScreen() != null)
+                    .collect(Collectors.toList());
+            model.addAttribute("shows", validShows);
+        } else {
+            model.addAttribute("shows", new ArrayList<>());
+        }
 
         return "user/movie-details";
     }
