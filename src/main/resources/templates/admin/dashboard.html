@@ -18,13 +18,13 @@
         <div class="col-md-3">
             <div class="card stat-card p-3 text-center">
                 <span class="text-muted small">💰 Total Revenue</span>
-                <h3 class="fw-bold text-success mt-2" th:text="'₹' + ${totalRevenue}">₹0</h3>
+                <h3 class="fw-bold text-success mt-2" th:text="${totalRevenue != null ? '₹' + totalRevenue : '₹0'}">₹0</h3>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card stat-card p-3 text-center">
                 <span class="text-muted small">🍿 Snacks Sold Today</span>
-                <h3 class="fw-bold text-warning mt-2" th:text="${totalSnacksSold}">0</h3>
+                <h3 class="fw-bold text-warning mt-2" th:text="${totalSnacksSold != null ? totalSnacksSold : '0'}">0</h3>
             </div>
         </div>
         <div class="col-md-6 text-end">
@@ -48,26 +48,30 @@
                 <tbody>
                 <tr th:each="scr : ${screens}">
                     <td class="fw-bold" th:text="${scr.screenName}">Screen</td>
-                    <td th:with="show=${#lists.filter(shows, 'screen.id == ' + scr.id)}">
-                        <div th:if="${not #lists.isEmpty(show)}">
-                            <span class="text-white" th:text="${show[0].movie.title}">Movie</span><br>
-                            <small class="text-muted" th:text="${show[0].startTime}">Time</small>
-                        </div>
-                        <span th:if="${#lists.isEmpty(show)}" class="text-muted">No Show</span>
+
+                    <td>
+                        <th:block th:each="s : ${shows}" th:if="${s.screen.id == scr.id}">
+                            <span class="text-white" th:text="${s.movie != null ? s.movie.title : 'N/A'}">Movie</span><br>
+                            <small class="text-muted" th:text="${s.startTime}">Time</small>
+                            <th:block th:with="foundShow=${s}" th:remove="tag"></th:block>
+                        </th:block>
+                        <span th:if="${#lists.isEmpty(#lists.filter(shows, 'screen.id == ' + scr.id))}" class="text-muted">No Show</span>
                     </td>
-                    <td th:with="show=${#lists.filter(shows, 'screen.id == ' + scr.id)}">
-                        <div th:if="${not #lists.isEmpty(show)}">
+
+                    <td>
+                        <div th:each="s : ${shows}" th:if="${s.screen.id == scr.id}">
                             <div class="progress" style="height: 20px; width: 150px;">
                                 <div class="progress-bar bg-danger"
-                                     th:style="'width:' + (${(scr.totalSeats - show[0].availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)}) + '%'"></div>
+                                     th:style="'width:' + (${(scr.totalSeats - s.availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)}) + '%'"></div>
                             </div>
-                            <small th:text="(${scr.totalSeats - show[0].availableSeats}) + ' / ' + ${scr.totalSeats}"></small>
+                            <small th:text="(${scr.totalSeats - s.availableSeats}) + ' / ' + ${scr.totalSeats}"></small>
                         </div>
-                        <span th:if="${#lists.isEmpty(show)}" class="text-muted">N/A</span>
                     </td>
-                    <td th:with="show=${#lists.filter(shows, 'screen.id == ' + scr.id)}">
-                        <span th:if="${not #lists.isEmpty(show)}" th:text="${((scr.totalSeats - show[0].availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)) + '%'}">0%</span>
-                        <span th:if="${#lists.isEmpty(show)}">0%</span>
+
+                    <td>
+                        <div th:each="s : ${shows}" th:if="${s.screen.id == scr.id}">
+                            <span th:text="${((scr.totalSeats - s.availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)) + '%'}">0%</span>
+                        </div>
                     </td>
                 </tr>
                 </tbody>
@@ -88,7 +92,8 @@
             </thead>
             <tbody>
             <tr th:each="snack : ${allSnacks}">
-                <td class="fw-bold" th:text="${snack.itemName}">Item Name</td> <td th:text="'₹' + ${snack.price}">₹0</td>
+                <td class="fw-bold" th:text="${snack.itemName}">Item Name</td>
+                <td th:text="'₹' + ${snack.price}">₹0</td>
                 <td th:text="${snack.availableStock}" th:classappend="${snack.availableStock <= 10 ? 'text-danger fw-bold' : ''}">0</td>
                 <td>
                     <span th:if="${snack.availableStock <= 10}" class="badge bg-danger">Low Stock</span>

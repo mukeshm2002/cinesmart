@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -33,19 +34,15 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String showAdminDashboard(Model model) {
-        try {
-            model.addAttribute("totalRevenue", paymentService.getTotalRevenue());
-            model.addAttribute("screens", screenService.getAllScreens());
-            model.addAttribute("allSnacks", snackService.getAllSnacks());
-            model.addAttribute("totalSnacksSold", snackService.getTotalSnacksSoldToday());
+        model.addAttribute("totalRevenue", paymentService.getTotalRevenue() != null ? paymentService.getTotalRevenue() : 0.0);
+        model.addAttribute("screens", screenService.getAllScreens() != null ? screenService.getAllScreens() : new java.util.ArrayList<>());
 
-            // 💡 இன்னைக்கு நடக்குற எல்லா ஷோக்களையும் தனி லிஸ்ட்டா அனுப்புறோம்
-            model.addAttribute("shows", showService.getAllShowsForToday());
+        // 💡 இங்கதான் மாற்றம்: ஷோஸ் லிஸ்ட் நல்-ஆ இருக்கக்கூடாது
+        List<Show> todayShows = showService.getAllShowsForToday();
+        model.addAttribute("shows", todayShows != null ? todayShows : new java.util.ArrayList<>());
 
-        } catch (Exception e) {
-            model.addAttribute("error", "Data load failed: " + e.getMessage());
-            model.addAttribute("screens", new java.util.ArrayList<>());
-        }
+        model.addAttribute("allSnacks", snackService.getAllSnacks() != null ? snackService.getAllSnacks() : new java.util.ArrayList<>());
+        model.addAttribute("totalSnacksSold", snackService.getTotalSnacksSoldToday() != null ? snackService.getTotalSnacksSoldToday() : 0L);
         return "admin/dashboard";
     }
 
