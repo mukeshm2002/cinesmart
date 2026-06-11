@@ -38,9 +38,11 @@ public class AdminController {
             model.addAttribute("screens", screenService.getAllScreens());
             model.addAttribute("allSnacks", snackService.getAllSnacks());
             model.addAttribute("totalSnacksSold", snackService.getTotalSnacksSoldToday());
-            model.addAttribute("lowStockSnacks", snackService.getLowStockAlerts());
+
+            // 💡 இன்னைக்கு நடக்குற எல்லா ஷோக்களையும் தனி லிஸ்ட்டா அனுப்புறோம்
+            model.addAttribute("shows", showService.getAllShowsForToday());
+
         } catch (Exception e) {
-            // எர்ரர் வந்தா அதை லாக் பண்ணிட்டு எம்டி லிஸ்ட் கொடுங்க
             model.addAttribute("error", "Data load failed: " + e.getMessage());
             model.addAttribute("screens", new java.util.ArrayList<>());
         }

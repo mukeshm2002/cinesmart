@@ -49,4 +49,8 @@ public class ShowService {
     public void deleteShow(Long id) {
         showRepository.deleteById(id);
     }
+
+    public List<Show> getAllShowsForToday() {
+        return showRepository.findByShowDate(LocalDate.now());
+    }
 }

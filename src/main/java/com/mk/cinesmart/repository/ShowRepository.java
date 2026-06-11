@@ -15,6 +15,8 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
     // ஒரு குறிப்பிட்ட ஸ்கிரீன்ல, குறிப்பிட்ட தேதியில வேற எதுவும் ஷோ ஓவர்லேப் ஆகுதான்னு செக் பண்ண
     List<Show> findByScreenIdAndShowDate(Long screenId, LocalDate showDate);
 
+    List<Show> findByShowDate(LocalDate showDate);
+
     // ஒரு மூவிக்கு ஆக்டிவா இருக்குற ஷோக்களை மட்டும் எடுக்க (Custom JPQL Query)
     @Query("SELECT s FROM Show s WHERE s.movie.id = :movieId AND s.showDate >= :currentDate ORDER BY s.showDate ASC, s.startTime ASC")
     List<Show> findUpcomingShowsByMovie(@Param("movieId") Long movieId, @Param("currentDate") LocalDate currentDate);
