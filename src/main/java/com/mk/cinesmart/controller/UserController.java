@@ -181,6 +181,7 @@ public class UserController {
             com.mk.cinesmart.model.Payment payment = com.mk.cinesmart.model.Payment.builder()
                     .transactionId("TXN-" + java.util.UUID.randomUUID().toString().substring(0, 10).toUpperCase())
                     .totalPaidAmount(amount)
+                    .refundedAmount(0.0)
                     .paymentStatus(com.mk.cinesmart.model.PaymentStatus.SUCCESS)
                     .paymentDateTime(java.time.LocalDateTime.now())
                     .booking(booking)

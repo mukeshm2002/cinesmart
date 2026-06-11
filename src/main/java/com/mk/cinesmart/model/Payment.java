@@ -24,7 +24,8 @@ public class Payment {
     private Double totalPaidAmount; // யூசர் பே பண்ண மொத்த காசு
 
     @Column(nullable = false)
-    private Double refundedAmount; // ரீஃபண்ட் பண்ண காசு (0.00 / 50% / 100%)
+    @Builder.Default // Lombok இருந்தால் இதை சேர்க்கவும்
+    private Double refundedAmount = 0.0;// ரீஃபண்ட் பண்ண காசு (0.00 / 50% / 100%)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
