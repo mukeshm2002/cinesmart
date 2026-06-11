@@ -148,10 +148,7 @@ public class BookingService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void saveNewBooking(Booking booking, Payment payment, List<Long> snackIds, List<Integer> quantities) {
-        // 1. டிக்கெட் புக்கிங் சேவ்
-        bookingRepository.save(booking);
-
-        // 2. ஷோ சீட் கவுன்ட் குறைத்தல்
+        // 1. தியேட்டர் சீட் அப்டேட்
         Show show = booking.getShow();
         int seatsBookedCount = booking.getSelectedSeats().size();
         if (show.getAvailableSeats() < seatsBookedCount) {
@@ -160,24 +157,29 @@ public class BookingService {
         show.setAvailableSeats(show.getAvailableSeats() - seatsBookedCount);
         showRepository.save(show);
 
-        // 3. 💡 புது அப்டேட்: ஸ்நாக்ஸ் ஸ்டாக் குறைத்தல்
+        // 2. ஸ்நாக்ஸ் ஸ்டாக் அப்டேட்
         if (snackIds != null && quantities != null) {
             for (int i = 0; i < snackIds.size(); i++) {
                 Long sId = snackIds.get(i);
                 Integer qty = quantities.get(i);
 
-                Snack snack = snackRepository.findById(sId)
-                        .orElseThrow(() -> new RuntimeException("Snack not found"));
+                // 💡 முக்கியம்: qty > 0 இருந்தா மட்டும் ப்ராசஸ் பண்ணுங்க
+                if (qty > 0) {
+                    Snack snack = snackRepository.findById(sId)
+                            .orElseThrow(() -> new RuntimeException("Snack not found"));
 
-                if (snack.getAvailableStock() < qty) {
-                    throw new IllegalStateException("Sorry, " + snack.getItemName() + " is out of stock!");
+                    if (snack.getAvailableStock() < qty) {
+                        throw new IllegalStateException("Sorry, " + snack.getItemName() + " is out of stock!");
+                    }
+                    snack.setAvailableStock(snack.getAvailableStock() - qty);
+                    snackRepository.save(snack);
                 }
-
-                // ஸ்டாக் குறைத்தல்
-                snack.setAvailableStock(snack.getAvailableStock() - qty);
-                snackRepository.save(snack);
             }
         }
+
+        // 3. பைனலா சேவ் பண்ணுங்க (Payment-ஐ Booking-க்கு செட் பண்ணிட்டதால, Booking-ஐ சேவ் பண்ணாலே போதும்)
+        bookingRepository.save(booking);
+        paymentRepository.save(payment);
     }
     // 1. ரீசேல் சீட்களை மட்டும் எடுக்க
     public List<String> getResaleSeatsOnly(Long showId) {
