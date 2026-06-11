@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -155,5 +156,11 @@ public class BookingService {
         show.setAvailableSeats(show.getAvailableSeats() - seatsBookedCount);
         // இங்க showRepository-ஐ ஆட்டோவொயர் பண்ணி சேவ் பண்ணிக்கலாம்
         // showRepository.save(show);
+    }
+    public List<String> getBookedSeatsForShow(Long showId) {
+        // அந்த ஷோ-க்கு புக் ஆன எல்லா புக்கிங்ஸ்-ஐ எடுத்து, அதுல இருக்குற எல்லா சீட்ஸையும் ஒரு லிஸ்ட்டா மாத்தணும்
+        return bookingRepository.findByShowId(showId).stream()
+                .flatMap(booking -> booking.getSelectedSeats().stream())
+                .collect(Collectors.toList());
     }
 }

@@ -25,4 +25,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // தியேட்டர் அட்மின் டேஷ்போர்டுக்காக புக்கிங் ஸ்டேட்டஸ் வச்சு கவுண்ட் எடுக்க
     long countByStatus(BookingStatus status);
+
+    List<Booking> findByShowId(Long showId);
 }

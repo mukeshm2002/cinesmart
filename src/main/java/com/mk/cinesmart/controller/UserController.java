@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -44,14 +45,22 @@ public class UserController {
         return "user/movie-details";
     }
 
-    // 3. 2D SEAT SELECTION VIEW - தியேட்டர் சீட் மேப் மற்றும் ரீசேல் டிக்கெட்டுகளை காட்ட
     @GetMapping("/show/{showId}/seats")
     public String showSeatSelection(@PathVariable("showId") Long showId, Model model) {
         Show show = showService.getShowById(showId);
         model.addAttribute("show", show);
         model.addAttribute("screen", show.getScreen());
 
-        // P2P Resale மார்க்கெட்ல மத்தவங்க விக்க வச்சிருக்க சீட்ஸ் (Yellow Seats)
+        // புக் ஆன சீட்ஸ்
+        model.addAttribute("bookedSeats", bookingService.getBookedSeatsForShow(showId));
+
+        // 💡 ரீசேல் சீட்ஸ் (இது ஒரு List<String> ஆக இருக்கணும்)
+        List<String> resaleList = bookingService.getResaleBookingsByShow(showId).stream()
+                .map(resale -> resale.getSelectedSeats()) // இது சீட்ஸ் லிஸ்ட்னு வச்சுப்போம்
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        model.addAttribute("resaleSeats", resaleList);
+
         model.addAttribute("resaleBookings", bookingService.getResaleBookingsByShow(showId));
         return "user/seat-selection";
     }
