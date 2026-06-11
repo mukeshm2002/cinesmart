@@ -56,7 +56,7 @@
 
                         <h4 class="fw-bold my-2"
                             th:if="${show.startTime != null}"
-                            th:text="${#temporals.format(T(java.time.LocalTime).parse(show.startTime), 'hh:mm a')}">
+                            th:text="${#temporals.format(show.startTime, 'hh:mm a')}">
                         </h4>
                         <h4 class="fw-bold my-2" th:if="${show.startTime == null}">--:--</h4>
 
