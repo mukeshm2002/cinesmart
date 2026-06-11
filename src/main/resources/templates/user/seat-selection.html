@@ -20,7 +20,7 @@
             border-radius: 8px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.2s; font-size: 0.7rem; font-weight: 600;
         }
-        .seat:hover { border-color: #e50914; }
+        .seat:hover:not(.booked) { border-color: #e50914; }
         .seat.selected { background: #e50914 !important; border: 1px solid #ff0a16; transform: scale(1.1); }
         .seat.booked { background: #222; opacity: 0.3; cursor: not-allowed; border: none; }
 
@@ -50,8 +50,8 @@
                         <span class="row-label" th:text="${'R' + r}"></span>
                         <div th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}" th:with="seatNo=${'R' + r + '-' + s}">
                             <div class="seat" th:id="${seatNo}"
-                                 th:classappend="${bookedSeats != null && #lists.contains(bookedSeats, seatNo)} ? 'booked' : (${resaleSeats != null && #lists.contains(resaleSeats, seatNo)} ? 'resale' : 'available')"
-                                 onclick="toggleSeat(this)">
+                                 th:classappend="${(bookedSeats != null && #lists.contains(bookedSeats, seatNo)) ? 'booked' : (resaleSeats != null && #lists.contains(resaleSeats, seatNo)) ? 'resale' : 'available'}"
+                                 th:onclick="${(bookedSeats != null && #lists.contains(bookedSeats, seatNo)) ? '' : 'toggleSeat(this)'}">
                                 <span th:if="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}">R</span>
                                 <span th:unless="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}" th:text="${s}"></span>
                             </div>
@@ -90,6 +90,7 @@
     let totalAmount = 0;
 
     function toggleSeat(element) {
+        // ஜஸ்ட் இன் கேஸ், booked சீட் கிளிக் ஆனா தடுக்க
         if (element.classList.contains('booked')) return;
 
         const isResale = element.classList.contains('resale');
