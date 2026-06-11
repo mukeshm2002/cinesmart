@@ -9,50 +9,74 @@
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
 
-        /* Ticket Stub Effect */
+        /* Ticket Design */
         .ticket-card {
             background: #111; border: 1px solid #222; border-radius: 20px;
-            padding: 25px; transition: 0.4s; position: relative; overflow: hidden;
+            padding: 25px; transition: 0.3s; position: relative;
         }
-        .ticket-card:hover { border-color: #e50914; transform: scale(1.01); }
+        .ticket-card:hover { border-color: #e50914; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* Status Badges */
-        .badge-status { padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .bg-confirmed { background: #1a4d2e; color: #55e69e; }
-        .bg-cancelled { background: #333; color: #aaa; }
-        .bg-resale { background: #854d0e; color: #fde047; }
+        /* Ticket Side-cuts */
+        .ticket-card::before, .ticket-card::after {
+            content: ''; position: absolute; top: 50%; width: 25px; height: 25px;
+            background: #050505; border-radius: 50%;
+        }
+        .ticket-card::before { left: -15px; }
+        .ticket-card::after { right: -15px; }
 
-        .btn-action { border-radius: 8px; font-weight: 600; font-size: 0.8rem; padding: 8px 15px; }
-        .btn-cancel { border: 1px solid #444; color: white; }
+        /* Badges */
+        .badge-status { padding: 6px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; }
+        .bg-confirmed { background: rgba(26, 77, 46, 0.3); color: #55e69e; border: 1px solid #1a4d2e; }
+
+        .btn-action { border-radius: 10px; font-weight: 600; font-size: 0.8rem; padding: 10px 20px; transition: 0.3s; }
+        .btn-cancel { background: transparent; border: 1px solid #444; color: #fff; }
+        .btn-cancel:hover { background: #333; }
         .btn-sell { background: #e50914; color: white; border: none; }
+        .btn-sell:hover { background: #ff0a16; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .ticket-card { padding: 20px; }
+            .btn-action { width: 100%; margin-bottom: 5px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container py-5" style="max-width: 900px;">
-    <div class="d-flex justify-content-between align-items-center mb-5">
+<div class="container py-5" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold">My Bookings</h2>
-        <a th:href="@{/user/home}" class="btn btn-outline-light btn-sm">Explore More</a>
+        <a th:href="@{/user/home}" class="btn btn-outline-light btn-sm px-3">Explore</a>
     </div>
 
-    <div th:if="${param.success}" class="alert alert-success bg-transparent border-success text-success" th:text="${param.success}"></div>
+    <div th:if="${bookings.empty}" class="text-center py-5">
+        <h5 class="text-secondary">No bookings found yet!</h5>
+    </div>
 
-    <div th:each="booking : ${bookings}" class="card ticket-card mb-4">
+    <div th:each="booking : ${bookings}" class="ticket-card mb-4">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h4 class="fw-bold mb-1" th:text="${booking.show.movie.title}">Movie Title</h4>
-                <div class="text-secondary small mb-3">
-                    <span th:text="${booking.show.showDate} + ' • ' + ${booking.show.startTime}"></span> |
-                    <span th:text="${booking.show.screen.screenName}"></span>
+                <div class="d-flex align-items-center mb-2">
+                    <h4 class="fw-bold mb-0 me-3" th:text="${booking.show.movie.title}">Movie Name</h4>
+                    <span class="badge-status"
+                          th:classappend="${booking.status.name() == 'CONFIRMED' ? 'bg-confirmed' : 'bg-secondary'}"
+                          th:text="${booking.status}"></span>
                 </div>
-                <div class="d-flex gap-4">
-                    <div>
-                        <small class="text-muted d-block">SEATS</small>
-                        <span class="fw-bold text-warning" th:text="${booking.selectedSeats}"></span>
+
+                <p class="text-secondary small mb-3">
+                    <i class="fas fa-calendar-alt me-1"></i> <span th:text="${booking.show.showDate}"></span> •
+                    <i class="fas fa-clock me-1"></i> <span th:text="${booking.show.startTime}"></span> |
+                    <span th:text="${booking.show.screen.screenName}"></span>
+                </p>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block text-uppercase" style="font-size: 0.6rem;">Seats</small>
+                        <span class="fw-bold text-white" th:text="${booking.selectedSeats}"></span>
                     </div>
-                    <div>
-                        <small class="text-muted d-block">BOOKING ID</small>
-                        <span class="font-monospace" th:text="${booking.bookingId}"></span>
+                    <div class="col-6">
+                        <small class="text-muted d-block text-uppercase" style="font-size: 0.6rem;">Booking ID</small>
+                        <span class="font-monospace text-white" th:text="${booking.bookingId}"></span>
                     </div>
                 </div>
             </div>
@@ -60,18 +84,12 @@
             <div class="col-md-4 text-md-end mt-4 mt-md-0">
                 <h3 class="fw-bold mb-3" th:text="'₹' + ${booking.totalAmount}"></h3>
 
-                <div class="mb-3">
-                    <span class="badge-status"
-                          th:classappend="${booking.status.name() == 'CONFIRMED' ? 'bg-confirmed' : (booking.status.name() == 'CANCELLED' ? 'bg-cancelled' : 'bg-resale')}"
-                          th:text="${booking.status}"></span>
-                </div>
-
-                <div th:if="${booking.status.name() == 'CONFIRMED'}" class="d-flex gap-2 justify-content-md-end">
+                <div th:if="${booking.status.name() == 'CONFIRMED'}" class="d-grid gap-2">
                     <form th:action="@{/user/booking/cancel/{id}(id=${booking.id})}" method="post">
-                        <button type="submit" class="btn btn-action btn-cancel">Cancel</button>
+                        <button type="submit" class="btn btn-action btn-cancel w-100">Cancel</button>
                     </form>
                     <form th:action="@{/user/booking/resale/list/{id}(id=${booking.id})}" method="post">
-                        <button type="submit" class="btn btn-action btn-sell">Sell Ticket</button>
+                        <button type="submit" class="btn btn-action btn-sell w-100">Sell Ticket</button>
                     </form>
                 </div>
             </div>

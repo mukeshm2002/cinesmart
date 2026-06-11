@@ -6,6 +6,7 @@
     <title>Join CineSmart | Register</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop');
@@ -20,11 +21,17 @@
             backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.9);
         }
 
+        /* எழுத்துக்கள் தெளிவா தெரியறதுக்கு மாத்தியிருக்கேன் */
         .form-control, .form-select {
-            background: #222 !important; border: 1px solid #444; color: color: #ffffff;
-            border-radius: 12px; padding: 12px;
+            background: #1a1a1a !important;
+            border: 1px solid #444;
+            color: #ffffff !important;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 1rem;
         }
-        .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; }
+        .form-control::placeholder { color: #888; }
+        .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25); }
 
         .btn-register {
             background: #e50914; color: white; padding: 14px;
@@ -32,7 +39,9 @@
         }
         .btn-register:hover { background: #ff0a16; transform: translateY(-2px); }
 
-        label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 5px; }
+        label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 8px; }
+
+        .input-group-text { background: #1a1a1a; border: 1px solid #444; color: #888; cursor: pointer; border-radius: 0 12px 12px 0; }
     </style>
 </head>
 <body>
@@ -58,9 +67,15 @@
             <label>Mobile Number</label>
             <input type="text" th:field="*{mobileNumber}" class="form-control" required placeholder="Ex: 9876543210">
         </div>
+
         <div class="mb-3">
             <label>Password</label>
-            <input type="password" th:field="*{password}" class="form-control" required placeholder="••••••••">
+            <div class="input-group">
+                <input type="password" th:field="*{password}" class="form-control" id="password" required placeholder="••••••••">
+                <span class="input-group-text" onclick="togglePassword()">
+                    <i class="fas fa-eye" id="toggleIcon"></i>
+                </span>
+            </div>
         </div>
 
         <div class="mb-4">
@@ -79,6 +94,22 @@
         Already a member? <a th:href="@{/login}" class="text-white fw-bold text-decoration-none">Sign In</a>
     </div>
 </div>
+
+<script>
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const toggleIcon = document.getElementById("toggleIcon");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
+        } else {
+            passwordField.type = "password";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
+        }
+    }
+</script>
 
 </body>
 </html>

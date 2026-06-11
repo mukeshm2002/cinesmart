@@ -6,33 +6,40 @@
     <title>Sign In | CineSmart</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2069&auto=format&fit=crop');
             background-size: cover; background-position: center;
-            color:#ffffff; font-family: 'Montserrat', sans-serif;
+            color: #ffffff; font-family: 'Montserrat', sans-serif;
             height: 100vh; display: flex; align-items: center; justify-content: center;
         }
-
         .login-card {
             background: rgba(17, 17, 17, 0.9); border: 1px solid #333;
             border-radius: 25px; padding: 50px; width: 100%; max-width: 450px;
             backdrop-filter: blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
-
+        /* டெக்ஸ்ட் தெளிவா தெரியுற மாதிரி மாத்தியிருக்கேன் */
         .form-control {
-            background: #222 !important; border: 1px solid #444; color: color: #fff;
-            border-radius: 12px; padding: 15px;
+            background: #1a1a1a !important;
+            border: 1px solid #444;
+            color: #ffffff !important;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1rem;
         }
-        .form-control:focus { border-color: #e50914; box-shadow: none; }
+        .form-control::placeholder { color: #888; }
+        .form-control:focus { border-color: #e50914; box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25); }
 
         .btn-login {
             background: #e50914; color: white; padding: 15px;
             border-radius: 12px; font-weight: 700; transition: 0.3s; border: none;
         }
         .btn-login:hover { background: #ff0a16; transform: translateY(-2px); }
-
         .brand-text { font-size: 2rem; font-weight: 800; color: #e50914; margin-bottom: 5px; }
+
+        /* பாஸ்வேர்ட் ஐகான் ஸ்டைல் */
+        .input-group-text { background: #1a1a1a; border: 1px solid #444; color: #888; cursor: pointer; border-radius: 0 12px 12px 0; }
     </style>
 </head>
 <body>
@@ -43,18 +50,19 @@
         <p class="text-secondary">Welcome back to the magic of cinema.</p>
     </div>
 
-    <div th:if="${param.error}" class="alert alert-danger bg-transparent border-danger text-danger py-2 small">Invalid Email or Password!</div>
-    <div th:if="${param.logout}" class="alert alert-success bg-transparent border-success text-success py-2 small">Logged out successfully.</div>
-    <div th:if="${param.registered}" class="alert alert-success bg-transparent border-success text-success py-2 small">Account created! Please sign in.</div>
-
     <form th:action="@{/login}" method="post">
         <div class="mb-4">
-            <label>Email</label>
-            <input type="email" class="form-control" name="email" required placeholder="Email Address">
+            <label class="mb-2">Email</label>
+            <input type="email" class="form-control" name="email" required placeholder="Enter your email">
         </div>
         <div class="mb-4">
-            <label>Password</label>
-            <input type="password" class="form-control" name="password" required placeholder="Password">
+            <label class="mb-2">Password</label>
+            <div class="input-group">
+                <input type="password" class="form-control" id="password" name="password" required placeholder="Enter password">
+                <span class="input-group-text" onclick="togglePassword()">
+                    <i class="fas fa-eye" id="toggleIcon"></i>
+                </span>
+            </div>
         </div>
         <button type="submit" class="btn btn-login w-100">Sign In</button>
     </form>
@@ -63,6 +71,22 @@
         New here? <a th:href="@{/register}" class="text-white fw-bold text-decoration-none">Create an account</a>
     </div>
 </div>
+
+<script>
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const toggleIcon = document.getElementById("toggleIcon");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
+        } else {
+            passwordField.type = "password";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
+        }
+    }
+</script>
 
 </body>
 </html>
