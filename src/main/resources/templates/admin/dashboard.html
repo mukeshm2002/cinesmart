@@ -50,16 +50,15 @@
                     <td class="fw-bold" th:text="${scr.screenName}">Screen</td>
 
                     <td>
-                        <th:block th:each="s : ${shows}" th:if="${s.screen.id == scr.id}">
-                            <span class="text-white" th:text="${s.movie != null ? s.movie.title : 'N/A'}">Movie</span><br>
+                        <th:block th:each="s : ${shows}" th:if="${s.screen != null and s.screen.id == scr.id}">
+                            <span class="text-white" th:text="${s.movie != null ? s.movie.title : 'Movie'}">Movie</span><br>
                             <small class="text-muted" th:text="${s.startTime}">Time</small>
-                            <th:block th:with="foundShow=${s}" th:remove="tag"></th:block>
                         </th:block>
-                        <span th:if="${#lists.isEmpty(#lists.filter(shows, 'screen.id == ' + scr.id))}" class="text-muted">No Show</span>
+                        <span th:if="${#lists.isEmpty(shows)}" class="text-muted">No Show</span>
                     </td>
 
                     <td>
-                        <div th:each="s : ${shows}" th:if="${s.screen.id == scr.id}">
+                        <div th:each="s : ${shows}" th:if="${s.screen != null and s.screen.id == scr.id}">
                             <div class="progress" style="height: 20px; width: 150px;">
                                 <div class="progress-bar bg-danger"
                                      th:style="'width:' + (${(scr.totalSeats - s.availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)}) + '%'"></div>
@@ -69,7 +68,7 @@
                     </td>
 
                     <td>
-                        <div th:each="s : ${shows}" th:if="${s.screen.id == scr.id}">
+                        <div th:each="s : ${shows}" th:if="${s.screen != null and s.screen.id == scr.id}">
                             <span th:text="${((scr.totalSeats - s.availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)) + '%'}">0%</span>
                         </div>
                     </td>
