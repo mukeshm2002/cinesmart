@@ -7,8 +7,9 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
         .details-container { background-color: #1e1e1e; border: 1px solid #2d2d2d; border-radius: 12px; }
-        .showtime-badge { background-color: #2d2d2d; color: #fff; border: 1px solid #444; transition: 0.2s; text-decoration: none; }
-        .showtime-badge:hover { background-color: #ffc107; color: #000; border-color: #ffc107; }
+        .showtime-badge { background-color: #2d2d2d; color: #fff; border: 1px solid #444; transition: 0.2s; text-decoration: none; display: block; }
+        .showtime-badge:hover:not(.disabled) { background-color: #ffc107; color: #000; border-color: #ffc107; }
+        .disabled { cursor: not-allowed; opacity: 0.6; background-color: #333; }
     </style>
 </head>
 <body>
@@ -38,10 +39,19 @@
 
             <div class="d-flex flex-wrap gap-3">
                 <div th:each="show : ${shows}">
-                    <a th:href="@{/user/show/{showId}/seats(showId=${show.id})}" class="badge p-3 fs-6 showtime-badge rounded shadow-sm text-center">
+                    <a th:href="${show.availableSeats > 0} ? @{/user/show/{showId}/seats(showId=${show.id})} : '#'"
+                       th:classappend="${show.availableSeats == 0} ? 'disabled' : 'showtime-badge'"
+                       class="badge p-3 fs-6 rounded shadow-sm text-center"
+                       style="width: 130px;">
+
                         <span class="d-block text-uppercase small fw-bold text-warning" th:text="${show.showDate}">Date</span>
                         <span class="fs-5 fw-bold" th:text="${show.startTime}">10:00 AM</span>
                         <span class="d-block text-muted small mt-1" th:text="'₹' + ${show.basePrice}">Price</span>
+
+                        <span class="d-block mt-2 fw-bold small"
+                              th:text="${show.availableSeats > 0 ? (show.availableSeats + ' left') : 'HOUSEFULL'}"
+                              th:classappend="${show.availableSeats == 0 ? 'text-danger' : 'text-success'}">
+                        </span>
                     </a>
                 </div>
             </div>

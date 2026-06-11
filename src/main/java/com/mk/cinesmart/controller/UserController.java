@@ -37,11 +37,14 @@ public class UserController {
         return "user/home";
     }
 
-    // 2. MOVIE DETAIL & SHOWS - ஒரு படத்தை கிளிக் பண்ணா அதோட விபரம் மற்றும் ஷோ டைமிங்ஸ காட்ட
     @GetMapping("/movie/{id}")
     public String showMovieDetails(@PathVariable("id") Long id, Model model) {
         model.addAttribute("movie", movieService.getMovieById(id));
-        model.addAttribute("shows", showService.getUpcomingShowsForMovie(id));
+
+        // இங்க உங்க சர்வீஸ் ஷோ லிஸ்ட்டை கொடுக்கும்போது அதுல availableSeats இருக்கான்னு உறுதி பண்ணிக்கோங்க
+        List<Show> shows = showService.getUpcomingShowsForMovie(id);
+        model.addAttribute("shows", shows);
+
         return "user/movie-details";
     }
 
