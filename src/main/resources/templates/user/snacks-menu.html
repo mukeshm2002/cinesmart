@@ -31,17 +31,17 @@
             <div class="row row-cols-1 row-cols-md-3 g-3">
                 <div class="col" th:each="snack : ${allSnacks}">
                     <div class="card snack-card h-100 shadow-sm text-white">
-                        <img th:src="${snack.snackImageUrl != null ? snack.snackImageUrl : 'https://placehold.co/300x150/png?text=Snack'}" class="snack-img" alt="Snack">
+                        <img th:src="${snack.imageUrl != null ? snack.imageUrl : 'https://placehold.co/300x150/png?text=Snack'}" class="snack-img" alt="Snack">
                         <div class="card-body d-flex flex-column">
-                            <h6 class="fw-bold mb-1" th:text="${snack.snackName}">Popcorn</h6>
-                            <p class="text-success fw-bold small" th:text="'₹' + ${snack.price}">₹100</p>
+                            <h6 class="fw-bold mb-1" th:text="${snack.itemName}">Snack Name</h6>
+                            <p class="text-success fw-bold small" th:text="'₹' + ${snack.price}">₹0</p>
 
                             <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary">
                                 <button class="btn btn-outline-light quantity-btn btn-sm"
-                                        th:onclick="updateQty([[${snack.id}]], [[${snack.snackName}]], [[${snack.price}]], -1)">-</button>
+                                        th:onclick="updateQty([[${snack.id}]], [[${snack.itemName}]], [[${snack.price}]], -1)">-</button>
                                 <span th:id="'qty-' + ${snack.id}" class="fw-bold fs-5">0</span>
                                 <button class="btn btn-success quantity-btn btn-sm text-dark"
-                                        th:onclick="updateQty([[${snack.id}]], [[${snack.snackName}]], [[${snack.price}]], 1)">+</button>
+                                        th:onclick="updateQty([[${snack.id}]], [[${snack.itemName}]], [[${snack.price}]], 1)">+</button>
                             </div>
                         </div>
                     </div>
@@ -80,22 +80,18 @@
     const seats = /*[[${selectedSeats}]]*/ '';
     const basePrice = /*[[${show.basePrice}]]*/ 0;
 
-    // டிக்கெட் டோட்டல் கால்குலேஷன்
-    const ticketCount = seats.split(',').length;
+    const ticketCount = seats ? seats.split(',').length : 0;
     const ticketTotalAmount = ticketCount * basePrice;
 
-    let cart = {}; // { snackId: { name: 'Popcorn', price: 120, qty: 1 } }
+    let cart = {};
 
     function updateQty(id, name, price, change) {
         if (!cart[id]) {
             cart[id] = { name: name, price: price, qty: 0 };
         }
-
         cart[id].qty += change;
-        if (cart[id].qty < 0) cart[id].qty = 0;
-        if (cart[id].qty === 0) delete cart[id];
+        if (cart[id].qty <= 0) delete cart[id];
 
-        // UI Label Update
         document.getElementById('qty-' + id).innerText = cart[id] ? cart[id].qty : 0;
         renderCart();
     }
@@ -107,11 +103,10 @@
 
         Object.keys(cart).forEach(id => {
             const item = cart[id];
-            const itemTotal = item.price * item.qty;
-            snackTotal += itemTotal;
+            snackTotal += (item.price * item.qty);
             html += `<div class="d-flex justify-content-between mb-1">
                         <span>${item.name} (x${item.qty})</span>
-                        <span>₹${itemTotal}</span>
+                        <span>₹${item.price * item.qty}</span>
                      </div>`;
         });
 
@@ -131,14 +126,13 @@
 
         const snackDetailsParam = snackStrings.length > 0 ? snackStrings.join(', ') : 'None';
 
-        // 💡 இங்க தான் மேட்டர்! encodeURIComponent யூஸ் பண்ணுங்க
+        // Encoding for safety
         const encodedSeats = encodeURIComponent(seats);
         const encodedSnacks = encodeURIComponent(snackDetailsParam);
 
         window.location.href = `/user/show/${showId}/payment?seats=${encodedSeats}&ticketAmount=${ticketTotalAmount}&snackAmount=${snackTotal}&snackDetails=${encodedSnacks}`;
     }
 
-    // இனிஷியல் லோடுல டிக்கெட் பிரைஸ் மட்டும் காட்டும்
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('liveTotal').innerText = '₹' + ticketTotalAmount;
     });
