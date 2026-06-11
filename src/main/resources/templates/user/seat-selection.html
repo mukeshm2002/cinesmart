@@ -24,7 +24,6 @@
         .seat.selected { background: #e50914 !important; border: 1px solid #ff0a16; transform: scale(1.1); }
         .seat.booked { background: #222; opacity: 0.3; cursor: not-allowed; border: none; }
 
-        /* Resale Pulse Effect */
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
             70% { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
@@ -51,7 +50,7 @@
                         <div th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}" th:with="seatNo=${'R' + r + '-' + s}">
                             <div class="seat" th:id="${seatNo}"
                                  th:classappend="${(bookedSeats != null && #lists.contains(bookedSeats, seatNo)) ? 'booked' : (resaleSeats != null && #lists.contains(resaleSeats, seatNo)) ? 'resale' : 'available'}"
-                                 th:onclick="${(bookedSeats != null && #lists.contains(bookedSeats, seatNo)) ? '' : 'toggleSeat(this)'}">
+                                 onclick="toggleSeat(this)">
                                 <span th:if="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}">R</span>
                                 <span th:unless="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}" th:text="${s}"></span>
                             </div>
@@ -90,7 +89,7 @@
     let totalAmount = 0;
 
     function toggleSeat(element) {
-        // ஜஸ்ட் இன் கேஸ், booked சீட் கிளிக் ஆனா தடுக்க
+        // Booked சீட்களைத் தடுக்க
         if (element.classList.contains('booked')) return;
 
         const isResale = element.classList.contains('resale');
