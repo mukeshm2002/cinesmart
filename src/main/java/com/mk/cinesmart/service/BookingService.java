@@ -5,6 +5,7 @@ import com.mk.cinesmart.model.*;
 import com.mk.cinesmart.repository.BookingRepository;
 import com.mk.cinesmart.repository.PaymentRepository;
 import com.mk.cinesmart.repository.ShowRepository;
+import com.mk.cinesmart.repository.SnackRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -141,22 +142,42 @@ public class BookingService {
     public List<Booking> getBookingsByUser(Long userId) {
         return bookingRepository.findByUserIdOrderByBookingDateTimeDesc(userId);
     }
-    @org.springframework.transaction.annotation.Transactional
-    public void saveNewBooking(Booking booking, Payment payment) {
-        // 1. புக்கிங் மற்றும் பேமெண்ட் விபரங்களை டேட்டாபேஸில் சேவ் செய்கிறோம்
+
+    @Autowired
+    private SnackRepository snackRepository; // இதை ஆட் பண்ணிக்கோங்க
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void saveNewBooking(Booking booking, Payment payment, List<Long> snackIds, List<Integer> quantities) {
+        // 1. டிக்கெட் புக்கிங் சேவ்
         bookingRepository.save(booking);
 
-        // 2. தியேட்டர் ஸ்கிரீனில் சீட் கவுன்ட்டைக் குறைக்கிறோம்
+        // 2. ஷோ சீட் கவுன்ட் குறைத்தல்
         Show show = booking.getShow();
         int seatsBookedCount = booking.getSelectedSeats().size();
-
         if (show.getAvailableSeats() < seatsBookedCount) {
             throw new IllegalStateException("Sorry, requested seats are no longer available!");
         }
-
         show.setAvailableSeats(show.getAvailableSeats() - seatsBookedCount);
-        // இங்க showRepository-ஐ ஆட்டோவொயர் பண்ணி சேவ் பண்ணிக்கலாம்
-        // showRepository.save(show);
+        showRepository.save(show);
+
+        // 3. 💡 புது அப்டேட்: ஸ்நாக்ஸ் ஸ்டாக் குறைத்தல்
+        if (snackIds != null && quantities != null) {
+            for (int i = 0; i < snackIds.size(); i++) {
+                Long sId = snackIds.get(i);
+                Integer qty = quantities.get(i);
+
+                Snack snack = snackRepository.findById(sId)
+                        .orElseThrow(() -> new RuntimeException("Snack not found"));
+
+                if (snack.getAvailableStock() < qty) {
+                    throw new IllegalStateException("Sorry, " + snack.getItemName() + " is out of stock!");
+                }
+
+                // ஸ்டாக் குறைத்தல்
+                snack.setAvailableStock(snack.getAvailableStock() - qty);
+                snackRepository.save(snack);
+            }
+        }
     }
     // 1. ரீசேல் சீட்களை மட்டும் எடுக்க
     public List<String> getResaleSeatsOnly(Long showId) {

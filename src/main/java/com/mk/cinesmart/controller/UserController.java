@@ -152,19 +152,21 @@ public class UserController {
         return "user/payment";
     }
 
-    // 💳 10. PROCESS FINAL CONFIRMED BOOKING PAYMENT
     @PostMapping("/booking/confirm")
-    public String confirmBooking(@RequestParam("showId") Long showId,
-                                 @RequestParam("seats") String seats,
-                                 @RequestParam("amount") Double amount,
-                                 Principal principal) {
+    public String confirmBooking(
+            @RequestParam("showId") Long showId,
+            @RequestParam("seats") String seats,
+            @RequestParam("amount") Double amount,
+            // 💡 புதுசா இந்த ஸ்நாக்ஸ் லிஸ்ட்டை வாங்கிக்கோங்க
+            @RequestParam(value = "snackIds", required = false) List<Long> snackIds,
+            @RequestParam(value = "quantities", required = false) List<Integer> quantities,
+            Principal principal) {
         try {
             User currentUser = userService.findUserByEmail(principal.getName());
             Show show = showService.getShowById(showId);
-
             List<String> seatsList = java.util.Arrays.asList(seats.split(","));
 
-            // 1. புது புக்கிங் ரெக்கார்டு கிரியேட் பண்றோம்
+            // புக்கிங் பில்டர்
             com.mk.cinesmart.model.Booking booking = com.mk.cinesmart.model.Booking.builder()
                     .bookingId("CS-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                     .bookingDateTime(java.time.LocalDateTime.now())
@@ -175,11 +177,10 @@ public class UserController {
                     .show(show)
                     .build();
 
-            // 2. பேமெண்ட் ரெக்கார்டு கிரியேட் பண்றோம்
+            // பேமெண்ட் பில்டர்
             com.mk.cinesmart.model.Payment payment = com.mk.cinesmart.model.Payment.builder()
                     .transactionId("TXN-" + java.util.UUID.randomUUID().toString().substring(0, 10).toUpperCase())
                     .totalPaidAmount(amount)
-                    .refundedAmount(0.0)
                     .paymentStatus(com.mk.cinesmart.model.PaymentStatus.SUCCESS)
                     .paymentDateTime(java.time.LocalDateTime.now())
                     .booking(booking)
@@ -187,10 +188,10 @@ public class UserController {
 
             booking.setPayment(payment);
 
-            // 3. சர்வீஸ் மூலமா சேவ் பண்றோம்
-            bookingService.saveNewBooking(booking, payment);
+            // 💡 4 ஆர்குமெண்ட்ஸை பாஸ் பண்றோம்
+            bookingService.saveNewBooking(booking, payment, snackIds, quantities);
 
-            return "redirect:/user/history?success=Ticket+Booked+Successfully!+Enjoy+the+movie.";
+            return "redirect:/user/history?success=Ticket+Booked+Successfully!";
         } catch (Exception e) {
             return "redirect:/user/home?error=" + e.getMessage();
         }
