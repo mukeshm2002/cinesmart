@@ -13,6 +13,7 @@
         .row-label { width: 30px; font-weight: bold; color: #ffc107; text-align: center; }
         .seat { width: 32px; height: 32px; background-color: #e0e0e0; color: #121212; border-radius: 6px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: 0.2s; }
 
+        /* Status Colors */
         .seat.selected { background-color: #28a745 !important; color: #fff !important; }
         .seat.booked { background-color: #dc3545 !important; color: #fff !important; cursor: not-allowed; }
         .seat.resale { background-color: #ffc107 !important; color: #000 !important; animation: pulse 2s infinite; }
@@ -41,13 +42,12 @@
             <div class="seat-grid">
                 <div class="seat-row" th:each="r : ${#numbers.sequence(1, screen.totalRows)}">
                     <span class="row-label" th:text="${'R' + r}">R1</span>
-
                     <div class="seat"
                          th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}"
                          th:with="seatNo=${'R' + r + '-' + s}"
                          th:id="${seatNo}"
                          th:text="${s}"
-                         th:classappend="${#lists.contains(bookedSeats, seatNo)} ? 'booked' : (${#lists.contains(resaleSeats, seatNo)} ? 'resale' : 'available')"
+                         th:classappend="${bookedSeats != null && #lists.contains(bookedSeats, seatNo)} ? 'booked' : (${resaleSeats != null && #lists.contains(resaleSeats, seatNo)} ? 'resale' : 'available')"
                          onclick="toggleSeat(this)">
                     </div>
                 </div>
@@ -68,7 +68,7 @@
 
             <div class="card bg-dark text-white border-warning p-3 shadow">
                 <h5 class="fw-bold text-warning">🟡 Resale Marketplace</h5>
-                <div th:if="${#lists.isEmpty(resaleBookings)}" class="text-muted small text-center my-3">No resale tickets.</div>
+                <div th:if="${resaleBookings == null or #lists.isEmpty(resaleBookings)}" class="text-muted small text-center my-3">No resale tickets available.</div>
                 <div class="list-group bg-transparent" th:each="resale : ${resaleBookings}">
                     <div class="list-group-item bg-secondary text-white border-dark mb-2 d-flex justify-content-between align-items-center">
                         <div>
@@ -105,7 +105,7 @@
     }
 
     function goToPayment() {
-        if (selectedSeatsList.length === 0) return alert("Select at least one seat!");
+        if (selectedSeatsList.length === 0) return alert("Please select a seat!");
         const showId = /*[[${show.id}]]*/ 0;
         window.location.href = `/user/show/${showId}/snacks?seats=${selectedSeatsList.join(',')}`;
     }

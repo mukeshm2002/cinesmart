@@ -157,10 +157,22 @@ public class BookingService {
         // இங்க showRepository-ஐ ஆட்டோவொயர் பண்ணி சேவ் பண்ணிக்கலாம்
         // showRepository.save(show);
     }
+    // 1. ரீசேல் சீட்களை மட்டும் எடுக்க
+    public List<String> getResaleSeatsOnly(Long showId) {
+        // 'this' யூஸ் பண்ணி அதே கிளாஸ்ல இருக்குற மெத்தடை கூப்பிடுறோம்
+        return this.getResaleBookingsByShow(showId).stream()
+                .flatMap(resale -> resale.getSelectedSeats().stream())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // 2. புக் ஆன சீட்கள் (ரீசேல்-ஐ தவிர்த்து)
     public List<String> getBookedSeatsForShow(Long showId) {
-        // அந்த ஷோ-க்கு புக் ஆன எல்லா புக்கிங்ஸ்-ஐ எடுத்து, அதுல இருக்குற எல்லா சீட்ஸையும் ஒரு லிஸ்ட்டா மாத்தணும்
-        return bookingRepository.findByShowId(showId).stream()
-                .flatMap(booking -> booking.getSelectedSeats().stream())
-                .collect(Collectors.toList());
+        List<Booking> bookings = bookingRepository.findByShowId(showId);
+        List<String> resaleSeats = this.getResaleSeatsOnly(showId);
+
+        return bookings.stream()
+                .flatMap(b -> b.getSelectedSeats().stream())
+                .filter(seat -> !resaleSeats.contains(seat)) // ரீசேல் சீட்டை நீக்குறோம்
+                .collect(java.util.stream.Collectors.toList());
     }
 }
