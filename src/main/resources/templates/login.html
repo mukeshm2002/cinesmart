@@ -10,7 +10,7 @@
         body {
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2069&auto=format&fit=crop');
             background-size: cover; background-position: center;
-            color: #fff; font-family: 'Montserrat', sans-serif;
+            color:#ffffff; font-family: 'Montserrat', sans-serif;
             height: 100vh; display: flex; align-items: center; justify-content: center;
         }
 
@@ -21,7 +21,7 @@
         }
 
         .form-control {
-            background: #222 !important; border: 1px solid #444; color: white !important;
+            background: #222 !important; border: 1px solid #444; color: color: #ffffff;
             border-radius: 12px; padding: 15px;
         }
         .form-control:focus { border-color: #e50914; box-shadow: none; }
@@ -49,9 +49,11 @@
 
     <form th:action="@{/login}" method="post">
         <div class="mb-4">
+            <label>Email</label>
             <input type="email" class="form-control" name="email" required placeholder="Email Address">
         </div>
         <div class="mb-4">
+            <label>Password</label>
             <input type="password" class="form-control" name="password" required placeholder="Password">
         </div>
         <button type="submit" class="btn btn-login w-100">Sign In</button>
