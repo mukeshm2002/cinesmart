@@ -77,8 +77,6 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    // 🔥 3. BUY RESALED TICKET (ATOMIC TRANSACTION WITH SERIALIZABLE ISOLATION)
-    // Concurrency மற்றும் Double Booking-ஐ தடுக்க இந்த Isolation Level ரொம்ப முக்கியம்!
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Booking purchaseResaledTicket(Long originalBookingId, User buyer) {
         Booking originalBooking = bookingRepository.findById(originalBookingId)
@@ -88,24 +86,27 @@ public class BookingService {
             throw new IllegalStateException("This ticket is no longer available for resale.");
         }
 
-        // STEP A: பழைய ஓனருக்கு 100% ரீஃபண்ட் (ஆனால் தியேட்டர் 10% கமிஷன் எடுத்துக்கொள்ளும்)
+        // STEP A: பழைய ஓனருக்கு 100% ரீஃபண்ட் (10% கமிஷன் கட் ஆகி)
         originalBooking.setStatus(BookingStatus.RESALE_SOLD);
         Payment originalPayment = originalBooking.getPayment();
         if (originalPayment != null) {
             double originalPaid = originalBooking.getTotalAmount();
-            // 10% கமிஷன் போக மீதி 90% பழைய யூசருக்கு ரீஃபண்ட் ஆகும்
             originalPayment.setRefundedAmount(originalPaid * 0.90);
             originalPayment.setPaymentStatus(PaymentStatus.REFUNDED_FULL);
             paymentRepository.save(originalPayment);
         }
         bookingRepository.save(originalBooking);
 
+        // 💡 முக்கியமான மாற்றம் இங்கேதான்!
+        // பழைய சீட் லிஸ்ட்டை அப்படியே கொடுக்காமல், ஒரு புது ArrayList-ஆ கிரியேட் பண்றோம்.
+        List<String> seatsForNewBooking = new java.util.ArrayList<>(originalBooking.getSelectedSeats());
+
         // STEP B: புதிய பையருக்கு (Buyer) புதிய புக்கிங் கன்பர்ம் செய்தல்
         Booking newBooking = Booking.builder()
                 .bookingId("CS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .bookingDateTime(LocalDateTime.now())
-                .selectedSeats(originalBooking.getSelectedSeats()) // அதே சீட் நம்பர்கள்
-                .totalAmount(originalBooking.getTotalAmount()) // அதே பிரைஸ் (No Price Scalping)
+                .selectedSeats(seatsForNewBooking) // 💡 இப்போ இது புது ரெஃபரன்ஸ்
+                .totalAmount(originalBooking.getTotalAmount())
                 .status(BookingStatus.CONFIRMED)
                 .user(buyer)
                 .show(originalBooking.getShow())
