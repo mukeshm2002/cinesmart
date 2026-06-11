@@ -113,5 +113,49 @@
     </div>
 </div>
 
+<div class="admin-card mb-5">
+    <h5 class="fw-bold mb-4">📺 Live Screen Schedule</h5>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Screen</th>
+                <th>Show Details</th>
+                <th>Occupancy</th>
+                <th>Utilization</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="scr : ${screens}">
+                <td class="fw-bold" th:text="${scr.screenName}">Screen Name</td>
+
+                <td>
+                    <div th:each="s : ${shows}" th:if="${s.screen != null and s.screen.id == scr.id}" class="mb-3 p-2 border-bottom border-dark">
+                        <div class="fw-bold text-danger" th:text="${s.movie.title}">Movie Title</div>
+                        <small class="text-secondary" th:text="${s.showDate} + ' | ' + ${s.startTime}"></small>
+                    </div>
+                </td>
+
+                <td style="min-width: 200px;">
+                    <div th:each="s : ${shows}" th:if="${s.screen != null and s.screen.id == scr.id}" class="mb-3">
+                        <div class="progress mb-1">
+                            <div class="progress-bar bg-danger"
+                                 th:style="'width:' + (${(scr.totalSeats - s.availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)}) + '%'"></div>
+                        </div>
+                        <small class="text-secondary" th:text="(${scr.totalSeats - s.availableSeats}) + ' / ' + ${scr.totalSeats}"></small>
+                    </div>
+                </td>
+
+                <td>
+                    <div th:each="s : ${shows}" th:if="${s.screen != null and s.screen.id == scr.id}" class="mb-3" style="margin-top: 10px;">
+                        <span class="fw-bold" th:text="${((scr.totalSeats - s.availableSeats) * 100 / (scr.totalSeats > 0 ? scr.totalSeats : 1)) + '%'}"></span>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 </body>
 </html>

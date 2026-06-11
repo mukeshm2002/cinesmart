@@ -8,42 +8,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
-
         .theatre-room { background: #0a0a0a; border: 1px solid #222; padding: 20px; border-radius: 20px; overflow-x: auto; }
+        .cinema-screen { height: 6px; width: 80%; background: #fff; margin: 0 auto 40px auto; box-shadow: 0 0 20px #fff; border-radius: 5px; }
 
-        /* Screen Styling */
-        .cinema-screen { height: 6px; width: 80%; background: #fff; margin: 0 auto 40px auto;
-                         box-shadow: 0 0 20px #fff; border-radius: 5px; }
-
-        /* Responsive Seat Grid */
         .seat-grid { display: flex; flex-direction: column; align-items: center; }
-        .seat-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
-
+        .seat-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
         .row-label { width: 40px; font-weight: 700; color: #666; font-size: 0.8rem; }
 
         .seat {
-            width: 32px; height: 32px; background: #222; border: 1px solid #444;
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            width: 35px; height: 35px; background: #1a1a1a; border: 1px solid #444;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.2s; font-size: 0.7rem; font-weight: 600;
         }
-
-        /* Colors - High Visibility */
-        .seat.available { background: #1a1a1a; color: #fff; border: 1px solid #444; }
-        .seat.available:hover { border-color: #e50914; }
+        .seat:hover { border-color: #e50914; }
         .seat.selected { background: #e50914 !important; border: 1px solid #ff0a16; transform: scale(1.1); }
-        .seat.booked { background: #333; opacity: 0.3; cursor: not-allowed; }
-        .seat.resale { background: #ffc107; color: #000; border: 1px solid #f39c12; font-weight: 700; }
+        .seat.booked { background: #222; opacity: 0.3; cursor: not-allowed; border: none; }
 
-        /* Legend */
-        .legend-box { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
+        /* Resale Pulse Effect */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+        .seat.resale { background: #ffc107; color: #000; border: 1px solid #d39e00; font-weight: 700; animation: pulse 2s infinite; }
+
+        .legend-box { display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
         .leg-circle { width: 15px; height: 15px; border-radius: 4px; }
-
-        /* Responsive fix for Mobile */
-        @media (max-width: 576px) {
-            .seat { width: 28px; height: 28px; font-size: 0.6rem; }
-            .theatre-room { padding: 10px; }
-        }
     </style>
 </head>
 <body>
@@ -58,9 +49,11 @@
                     <div class="seat-row" th:each="r : ${#numbers.sequence(1, screen.totalRows)}">
                         <span class="row-label" th:text="${'R' + r}"></span>
                         <div th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}" th:with="seatNo=${'R' + r + '-' + s}">
-                            <div class="seat" th:id="${seatNo}" th:text="${s}"
+                            <div class="seat" th:id="${seatNo}"
                                  th:classappend="${bookedSeats != null && #lists.contains(bookedSeats, seatNo)} ? 'booked' : (${resaleSeats != null && #lists.contains(resaleSeats, seatNo)} ? 'resale' : 'available')"
                                  onclick="toggleSeat(this)">
+                                <span th:if="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}">R</span>
+                                <span th:unless="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}" th:text="${s}"></span>
                             </div>
                         </div>
                     </div>
@@ -69,7 +62,7 @@
                 <div class="legend-box">
                     <div class="legend-item"><div class="leg-circle" style="background:#1a1a1a; border:1px solid #444"></div> Available</div>
                     <div class="legend-item"><div class="leg-circle" style="background:#e50914"></div> Selected</div>
-                    <div class="legend-item"><div class="leg-circle" style="background:#ffc107"></div> Resale</div>
+                    <div class="legend-item"><div class="leg-circle" style="background:#ffc107"></div> Resale (R)</div>
                 </div>
             </div>
         </div>
@@ -77,7 +70,8 @@
         <div class="col-lg-4 mt-4 mt-lg-0">
             <div class="card bg-dark text-white border-secondary p-4 rounded-4 shadow-lg">
                 <h5 class="fw-bold mb-3">Your Selection</h5>
-                <div class="display-6 text-danger mb-3" id="displaySeats">--</div>
+                <div id="resale-note" class="alert alert-warning py-1 px-2 small d-none">⚠️ Resale ticket premium applied.</div>
+                <div class="display-6 text-danger mb-3" id="displaySeats" style="min-height: 50px;">--</div>
                 <hr class="border-secondary">
                 <div class="d-flex justify-content-between mb-4">
                     <span>Total Amount:</span>
@@ -91,27 +85,40 @@
 
 <script th:inline="javascript">
     const basePrice = /*[[${show.basePrice}]]*/ 0;
+    const resalePremium = 50;
     let selectedSeatsList = [];
+    let totalAmount = 0;
 
     function toggleSeat(element) {
         if (element.classList.contains('booked')) return;
 
+        const isResale = element.classList.contains('resale');
+        const price = isResale ? (basePrice + resalePremium) : basePrice;
+
         if (element.classList.contains('selected')) {
             element.classList.remove('selected');
             selectedSeatsList = selectedSeatsList.filter(id => id !== element.id);
+            totalAmount -= price;
         } else {
-            // நீங்க அதிகபட்சம் 5 சீட் வரைதான் புக் பண்ணலாம்னு கூட இங்க கண்டிஷன் வைக்கலாம்
+            if (selectedSeatsList.length >= 5) return alert("Max 5 seats allowed!");
             element.classList.add('selected');
             selectedSeatsList.push(element.id);
+            totalAmount += price;
         }
+
+        // Update UI
         document.getElementById('displaySeats').innerText = selectedSeatsList.length > 0 ? selectedSeatsList.join(', ') : '--';
-        document.getElementById('totalAmount').innerText = '₹' + (selectedSeatsList.length * basePrice);
+        document.getElementById('totalAmount').innerText = '₹' + totalAmount;
+
+        // Show/Hide Resale Alert
+        const hasResale = selectedSeatsList.some(id => document.getElementById(id).classList.contains('resale'));
+        document.getElementById('resale-note').classList.toggle('d-none', !hasResale);
     }
 
     function goToPayment() {
         if (selectedSeatsList.length === 0) return alert("Select at least one seat!");
         const showId = /*[[${show.id}]]*/ 0;
-        window.location.href = `/user/show/${showId}/snacks?seats=${selectedSeatsList.join(',')}`;
+        window.location.href = `/user/show/${showId}/snacks?seats=${selectedSeatsList.join(',')}&total=${totalAmount}`;
     }
 </script>
 </body>
