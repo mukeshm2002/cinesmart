@@ -24,7 +24,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password; // BCrypt hashed password ஸ்டோர் ஆகும்
+    private String password;
 
     @Column(nullable = false, length = 15)
     private String mobileNumber;
@@ -33,7 +33,28 @@ public class User {
     @Column(nullable = false, length = 30)
     private UserRole role;
 
-    // One User can have multiple bookings
+    // --- புதிய மாற்றங்கள் ---
+
+    // தியேட்டர் அட்மின்கள் எந்த தியேட்டரைச் சேர்ந்தவர்கள் என்று அறிய
+    // தியேட்டர் மாடல் உருவாக்கிய பிறகு இங்கே @ManyToOne ரிலேஷன்ஷிப் கொடுக்கலாம்
+    private String theatreName;
+
+    // அக்கவுண்ட் வெரிஃபிகேஷன் (OTP-க்காக)
+    @Builder.Default
+    private boolean isVerified = false;
+
+    // -----------------------
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Booking> bookings;
+
+    @ManyToOne
+    @JoinColumn(name = "theatre_id")
+    private Theatre theatre;
+
+    private String otp;
+    private boolean verified = false;
+
+    public void setVerified(boolean verified) {
+        this.verified = verified; }
 }

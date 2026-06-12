@@ -8,66 +8,83 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
-
         .dashboard-container { background: #111; border-radius: 25px; padding: 30px; border: 1px solid #222; }
-
-        /* Table Styling */
         .table { color: #fff; border-collapse: separate; border-spacing: 0 10px; }
         .table thead th { border: none; color: #666; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
         .table tbody tr { background: #1a1a1a; transition: 0.3s; }
         .table tbody tr:hover { background: #222; }
         .table td { border: none; padding: 20px; }
-
-        /* Buttons */
-        .btn-add { background: #e50914; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 700; }
+        .btn-add { background: #e50914; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; }
         .btn-delete { background: transparent; border: 1px solid #444; color: #ff4d4d; border-radius: 8px; font-size: 0.8rem; }
         .btn-delete:hover { background: #ff4d4d; color: white; }
+        .nav-pills .nav-link { color: #888; font-weight: 600; margin-right: 10px; }
+        .nav-pills .nav-link.active { background-color: #e50914 !important; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h2 class="fw-bold">Admin Control Center</h2>
-            <p class="text-secondary">Manage your movies and catalogue.</p>
+    <h2 class="fw-bold mb-4">Admin Control Center</h2>
+
+    <ul class="nav nav-pills mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#movies">Movies</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#theatres">Theatre Admins</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#upcoming">Upcoming</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="movies">
+            <div class="d-flex justify-content-end mb-3"><a th:href="@{/super-admin/movie/add}" class="btn btn-add">+ Add Movie</a></div>
+            <div class="table-responsive dashboard-container">
+                <table class="table align-middle">
+                    <thead><tr><th>Poster</th><th>Title</th><th>Genre</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="movie : ${movies}">
+                        <td><img th:src="${movie.posterUrl}" width="50" class="rounded"></td>
+                        <td th:text="${movie.title}"></td>
+                        <td th:text="${movie.genre}"></td>
+                        <td class="text-end"><a th:href="@{/super-admin/movie/delete/{id}(id=${movie.id})}" class="btn btn-delete" onclick="return confirm('Delete?')">Remove</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <a th:href="@{/super-admin/movie/add}" class="btn btn-add">+ Add Movie</a>
-    </div>
 
-    <div th:if="${param.success}" class="alert alert-success bg-transparent border-success text-success mb-4" th:text="${param.success}"></div>
+        <div class="tab-pane fade" id="theatres">
+            <div class="d-flex justify-content-end mb-3"><a th:href="@{/super-admin/theatre-admin/add}" class="btn btn-add">+ Add Theatre Admin</a></div>
+            <div class="table-responsive dashboard-container">
+                <table class="table align-middle">
+                    <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="admin : ${theatreAdmins}">
+                        <td th:text="${admin.email}"></td>
+                        <td th:text="${admin.role}"></td>
+                        <td class="text-end"><a th:href="@{/super-admin/theatre-admin/delete/{id}(id=${admin.id})}" class="btn btn-delete">Remove</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <div class="dashboard-container shadow-lg">
-        <table class="table align-middle">
-            <thead>
-            <tr>
-                <th>Poster</th>
-                <th>Movie Title</th>
-                <th>Genre</th>
-                <th>Language</th>
-                <th>Duration</th>
-                <th class="text-end">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="movie : ${movies}">
-                <td>
-                    <img th:src="${movie.posterUrl}" width="60" class="rounded-3 shadow" style="object-fit: cover;">
-                </td>
-                <td class="fw-bold" th:text="${movie.title}"></td>
-                <td class="text-secondary" th:text="${movie.genre}"></td>
-                <td class="text-secondary" th:text="${movie.language}"></td>
-                <td class="text-secondary" th:text="${movie.durationInMinutes} + ' mins'"></td>
-                <td class="text-end">
-                    <a th:href="@{/super-admin/movie/delete/{id}(id=${movie.id})}"
-                       class="btn btn-delete px-3"
-                       onclick="return confirm('Delete this movie?');">Remove</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="tab-pane fade" id="upcoming">
+            <div class="d-flex justify-content-end mb-3"><a th:href="@{/super-admin/upcoming/add}" class="btn btn-add">+ Add Upcoming</a></div>
+            <div class="table-responsive dashboard-container">
+                <table class="table align-middle">
+                    <thead><tr><th>Poster</th><th>Title</th><th>Release Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="movie : ${upcomingMovies}">
+                        <td><img th:src="${movie.posterUrl}" width="50" class="rounded"></td>
+                        <td th:text="${movie.title}"></td>
+                        <td th:text="${movie.releaseDate}"></td>
+                        <td class="text-end"><a th:href="@{/super-admin/upcoming/delete/{id}(id=${movie.id})}" class="btn btn-delete">Remove</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

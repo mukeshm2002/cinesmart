@@ -28,31 +28,23 @@ public class SnackService {
         return snackRepository.save(snack);
     }
 
-    // 💡 NEW: ADDED THIS TO PREVENT "Cannot resolve method" ERROR
-    public List<Snack> getAllSnacks() {
-        return snackRepository.findAll();
+    // 2. NEW: GET SNACKS BY THEATRE (Theater Admin Dashboard)
+    public List<Snack> getSnacksByTheatre(Long theatreId) {
+        return snackRepository.findByTheatreIdOrderByPriceAsc(theatreId);
     }
 
-    // 💡 NEW: ADDED FOR ADMIN DASHBOARD (Snacks Sold Count)
-    // குறிப்பு: உங்க டேட்டாபேஸ்ல ஆர்டர் டேபிள் இருந்தா அதை இங்க கணக்கு பண்ணிக்கோங்க.
-    // இப்போதைக்கு ஸ்டாக் சேஞ்ச்-ஐ வச்சு தோராயமா (0) ரிட்டர்ன் பண்றேன்.
-    public Long getTotalSnacksSoldToday() {
-        return 0L;
-    }
-
-    // 2. GET ALL AVAILABLE SNACKS (Sorted)
-    public List<Snack> getAllSnacksSortedByPrice() {
-        return snackRepository.findAllByOrderByPriceAsc();
-    }
-
-    // SnackService.java-வில் இதை மட்டும் மாத்துங்க
-    public List<Snack> getLowStockAlerts() {
+    // 3. NEW: LOW STOCK ALERTS BY THEATRE
+    public List<Snack> getLowStockAlertsByTheatre(Long theatreId) {
         int lowStockThreshold = 10;
-        // இங்க உங்க கஸ்டம் குவரியை கூப்பிடுறோம்
-        return snackRepository.findLowStockSnacks(lowStockThreshold);
+        return snackRepository.findLowStockSnacksByTheatre(lowStockThreshold, theatreId);
     }
 
-    // 4. DELETE SNACK
+    // 4. GET ACTIVE SNACKS FOR A SPECIFIC THEATRE (User Screen)
+    public List<Snack> getActiveSnacksByTheatre(Long theatreId) {
+        return snackRepository.findByTheatreIdAndAvailableStockGreaterThan(theatreId, 0);
+    }
+
+    // 5. DELETE SNACK
     public void deleteSnack(Long id) {
         if (!snackRepository.existsById(id)) {
             throw new RuntimeException("Snack item not found with ID: " + id);
@@ -60,8 +52,7 @@ public class SnackService {
         snackRepository.deleteById(id);
     }
 
-    // 5. GET ACTIVE SNACKS FOR USER
-    public List<Snack> getAllActiveSnacks() {
-        return snackRepository.findByAvailableStockGreaterThan(0);
+    public Long getTotalSnacksSoldToday() {
+        return 0L; // ஆர்டர் டேபிளை லிங்க் செய்தபின் இதை அப்டேட் செய்யலாம்
     }
 }

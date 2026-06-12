@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Configure Screen</title>
+    <title>Theatre Admin | Configure Screen</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -34,7 +34,7 @@
 
         <div th:if="${error}" class="alert alert-danger bg-transparent border-danger text-danger" th:text="${error}"></div>
 
-        <form th:action="@{/admin/screen/save}" th:object="${screen}" method="post">
+        <form th:action="@{/theatre-admin/screen/save}" th:object="${screen}" method="post">
 
             <div class="mb-4">
                 <label>Screen Name</label>
@@ -56,7 +56,7 @@
 
             <div class="d-flex gap-3">
                 <button type="submit" class="btn btn-build w-100">Build Layout</button>
-                <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary w-100">Cancel</a>
+                <a th:href="@{/theatre-admin/dashboard}" class="btn btn-outline-secondary w-100">Cancel</a>
             </div>
         </form>
     </div>

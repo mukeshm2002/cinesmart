@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class MainController {
@@ -28,20 +29,37 @@ public class MainController {
         return "register"; // templates/register.html-ஐ காட்டும்
     }
 
-    // 3. PROCESS REGISTRATION FORM (UPDATED)
     @PostMapping("/register")
     public String processRegister(@ModelAttribute("user") User user, Model model) {
         try {
-            // 💡 சர்வீஸ் லேயர் மூலமா பாஸ்வேர்ட் என்க்ரிப்ஷன் மற்றும் ரோல் அசைன்மென்ட் (mk@example.com-க்கு சூப்பர் அட்மின்) நடக்கும்
             userService.registerUser(user);
-
-            // ரெஜிஸ்டர் ஆனதும் லாகின் பேஜுக்கு சக்சஸ் மெசேஜோடு ரீடைரக்ட் பண்றோம்
-            return "redirect:/login?registered=true";
+            // லாகினுக்கு அனுப்பாமல், OTP சரிபார்க்கும் பக்கத்திற்கு அனுப்புகிறோம்
+            return "redirect:/verify-otp?email=" + user.getEmail();
         } catch (IllegalArgumentException e) {
-            // ஒருவேளை ஈமெயில் ஏற்கனவே இருந்தாலோ அல்லது எர்ரர் வந்தாலோ ஃபார்ம்ல மெசேஜ் காட்டுகிறோம்
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("user", user); // 💡 ஃபில் பண்ண டேட்டா அழியாம இருக்க ஆப்ஜெக்ட்டை மறுபடி அனுப்புறோம்
+            model.addAttribute("user", user);
             return "register";
+        }
+    }
+
+    // 4. OTP வெரிஃபிகேஷன் பக்கம் காட்டுதல்
+    @GetMapping("/verify-otp")
+    public String showOtpPage(@RequestParam("email") String email, Model model) {
+        model.addAttribute("email", email);
+        return "verify-otp"; // templates/verify-otp.html தேவை
+    }
+
+    // 5. OTP சரிபார்த்தல்
+    @PostMapping("/verify-otp")
+    public String processOtp(@RequestParam("email") String email,
+                             @RequestParam("otp") String otp,
+                             Model model) {
+        if (userService.verifyOtp(email, otp)) {
+            return "redirect:/login?verified=true";
+        } else {
+            model.addAttribute("error", "தவறான OTP! மீண்டும் முயற்சிக்கவும்.");
+            model.addAttribute("email", email);
+            return "verify-otp";
         }
     }
 }

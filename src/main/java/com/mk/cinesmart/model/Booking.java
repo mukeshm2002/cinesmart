@@ -19,22 +19,33 @@ public class Booking {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String bookingId; // எ.கா: CS-2026-XYZ89 (Unique Ticket Code)
+    private String bookingId;
 
     @Column(nullable = false)
     private LocalDateTime bookingDateTime;
 
-    @ElementCollection // PostgreSQL-ல் தனி டேபிளாக சீட்களை லிஸ்ட் பண்ணும் (எ.கா: A1, A2)
+    @ElementCollection
     @CollectionTable(name = "booking_seats", joinColumns = @JoinColumn(name = "booking_id"))
     @Column(name = "seat_number")
     private List<String> selectedSeats;
 
     @Column(nullable = false)
-    private Double totalAmount; // 18% GST + Convenience fee எல்லாம் சேர்த்த மொத்த தொகை
+    private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private BookingStatus status;
+
+    // --- புதிய மாற்றங்கள் ---
+
+    // தியேட்டர் அட்மின் டேஷ்போர்டுக்காக தியேட்டர் ஐடியை இங்கே சேர்க்கலாம்
+    // அல்லது ஷோ வழியாகவும் எடுக்கலாம், ஆனால் பெர்ஃபார்மென்ஸுக்காக இதை சேர்க்கிறது நல்லது
+    private Long theatreId;
+
+    // ரீசேல் நடக்கும்போது புதிய உரிமையாளர் விவரம் தேவைப்படும்
+    private String resoldToUserEmail;
+
+    // -----------------------
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -44,7 +55,6 @@ public class Booking {
     @JoinColumn(name = "show_id", nullable = false)
     private Show show;
 
-    // இந்த புக்கிங்கான பேமெண்ட் விபரம்
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Payment payment;
 }

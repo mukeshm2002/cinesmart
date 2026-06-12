@@ -1,22 +1,27 @@
 package com.mk.cinesmart.repository;
 
-
 import com.mk.cinesmart.model.Payment;
+import com.mk.cinesmart.model.PaymentStatus; // இதையும் சேர்த்துக்கொள்ளுங்கள்
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    // Booking ID வச்சு அதோட பேமெண்ட் ட்ரான்சாக்ஷனை கண்டுபிடிக்க (Refund ப்ராசஸ் பண்ண முக்கியம்)
+    // Booking ID வைத்து பேமெண்ட் தேடல்
     Optional<Payment> findByBookingId(Long bookingId);
 
-    // Gateway transaction ID வச்சு வெரிஃபை பண்ண
+    // Transaction ID வைத்து வெரிஃபிகேஷன்
     Optional<Payment> findByTransactionId(String transactionId);
 
-    // 📊 Admin Analytics: தியேட்டரோட மொத்த பாக்ஸ் ஆபீஸ் வசூலை கணக்கிட
-    @Query("SELECT SUM(p.totalPaidAmount) FROM Payment p WHERE p.paymentStatus = com.mk.cinesmart.model.PaymentStatus.SUCCESS")
-    Double calculateTotalRevenue();
+    // மொத்த வசூல் (Super Admin-க்காக)
+    @Query("SELECT SUM(p.totalPaidAmount) FROM Payment p WHERE p.paymentStatus = :status")
+    Double calculateTotalRevenue(@Param("status") PaymentStatus status);
+
+    // தியேட்டர் வாரியான வருவாய் (Theatre Admin-க்காக)
+    @Query("SELECT SUM(p.totalPaidAmount) FROM Payment p JOIN p.booking b WHERE b.theatreId = :theatreId AND p.paymentStatus = :status")
+    Double calculateRevenueByTheatre(@Param("theatreId") Long theatreId, @Param("status") PaymentStatus status);
 }

@@ -1,6 +1,5 @@
 package com.mk.cinesmart.service;
 
-
 import com.mk.cinesmart.model.User;
 import com.mk.cinesmart.model.UserRole;
 import com.mk.cinesmart.repository.UserRepository;
@@ -8,41 +7,67 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private EmailService emailService; // ஏற்கனவே உருவாக்கிய EmailService
 
-    // ஸ்பிரிங் செக்யூரிட்டி பாஸ்வேர்ட் என்கோடர்
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // 1. USER REGISTRATION (With BCrypt Encryption)
+    // 1. USER REGISTRATION WITH OTP
     public User registerUser(User user) {
-        // ஈமெயில் ஏற்கனவே இருக்கானு செக் பண்றோம்
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email ID already registered!");
         }
 
-        // பாஸ்வேர்டை ஹேஷ் செய்கிறோம்
+        // OTP உருவாக்கம் (6 இலக்கம்)
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+        user.setOtp(otp);
+        user.setVerified(false); // முதலில் வெரிஃபை ஆகவில்லை
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(UserRole.ROLE_USER);
 
-        // டிஃபால்ட்டா எல்லாருக்கும் ROLE_USER தான் போகும் (அட்மினை டேட்டாபேஸ்ல மாத்திக்கலாம்)
-        if (user.getRole() == null) {
-            user.setRole(UserRole.ROLE_USER);
+        User savedUser = userRepository.save(user);
+
+        // Welcome Email & OTP அனுப்புதல்
+        emailService.sendWelcomeEmail(savedUser.getEmail(), otp);
+
+        return savedUser;
+    }
+
+    // 2. OTP VERIFICATION
+    public boolean verifyOtp(String email, String inputOtp) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null && user.getOtp().equals(inputOtp)) {
+            user.setVerified(true);
+            user.setOtp(null); // பயன்படுத்திய பிறகு OTP-ஐ நீக்கிவிடவும்
+            userRepository.save(user);
+            return true;
         }
+        return false;
+    }
 
+    // 3. CREATE THEATRE ADMIN
+    public User createTheatreAdmin(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Email already exists!");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(UserRole.ROLE_THEATRE_ADMIN);
         return userRepository.save(user);
     }
 
-    // 2. FIND USER BY EMAIL (For Authentication)
+    // 4. FIND USER
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    // 3. GET USERS BY ROLE (For Super Admin Dashboard)
+    // 5. GET BY ROLE
     public List<User> getUsersByRole(UserRole role) {
         return userRepository.findByRole(role);
     }

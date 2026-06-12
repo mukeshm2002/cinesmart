@@ -1,6 +1,5 @@
 package com.mk.cinesmart.repository;
 
-
 import com.mk.cinesmart.model.Show;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,13 +10,16 @@ import java.util.List;
 
 @Repository
 public interface ShowRepository extends JpaRepository<Show, Long> {
-
-    // ஒரு குறிப்பிட்ட ஸ்கிரீன்ல, குறிப்பிட்ட தேதியில வேற எதுவும் ஷோ ஓவர்லேப் ஆகுதான்னு செக் பண்ண
     List<Show> findByScreenIdAndShowDate(Long screenId, LocalDate showDate);
-
     List<Show> findByShowDate(LocalDate showDate);
 
-    // ஒரு மூவிக்கு ஆக்டிவா இருக்குற ஷோக்களை மட்டும் எடுக்க (Custom JPQL Query)
+    // புதிய மாற்றம்: குறிப்பிட்ட தியேட்டரில் உள்ள ஷோக்களை மட்டும் எடுக்க
+    List<Show> findByTheatreId(Long theatreId);
+
     @Query("SELECT s FROM Show s WHERE s.movie.id = :movieId AND s.showDate >= :currentDate ORDER BY s.showDate ASC, s.startTime ASC")
     List<Show> findUpcomingShowsByMovie(@Param("movieId") Long movieId, @Param("currentDate") LocalDate currentDate);
+
+    // ஷோக்கள் மூலம் விற்கப்பட்ட மொத்த டிக்கெட்டுகளைக் கூட்ட (Sum query)
+    @Query("SELECT SUM(s.totalSeats - s.availableSeats) FROM Show s WHERE s.theatre.id = :theatreId")
+    Integer findTotalTicketsSoldByTheatre(@Param("theatreId") Long theatreId);
 }

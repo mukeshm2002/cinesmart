@@ -22,11 +22,16 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         // ரோலை செக் பண்ணி சரியான URL-க்கு அனுப்புறோம்
         for (GrantedAuthority authority : authorities) {
-            if (authority.getAuthority().equals("ROLE_SUPER_ADMIN")) {
+            String role = authority.getAuthority();
+
+            if (role.equals("ROLE_SUPER_ADMIN")) {
                 targetUrl = "/super-admin/dashboard";
                 break;
-            } else if (authority.getAuthority().equals("ROLE_ADMIN")) {
-                targetUrl = "/admin/dashboard";
+            } else if (role.equals("ROLE_THEATRE_ADMIN")) {
+                targetUrl = "/theatre-admin/dashboard";
+                break;
+            } else if (role.equals("ROLE_USER")) {
+                targetUrl = "/user/home";
                 break;
             }
         }

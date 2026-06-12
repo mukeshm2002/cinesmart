@@ -31,4 +31,11 @@ public class FeedbackService {
         // ஒருவேளை படத்துக்கு இன்னும் யாரும் ரேட்டிங் தரலனா, Default-ஆ 0.00-ன்னு ரிட்டர்ன் பண்ணும்
         return (avgRating != null) ? avgRating : 0.0;
     }
+    public List<Feedback> getFeedbackByMovie(Long movieId) {
+        return feedbackRepository.findByMovieId(movieId);
+    }
+
+    public void saveFeedback(Feedback feedback) {
+        feedbackRepository.save(feedback);
+    }
 }

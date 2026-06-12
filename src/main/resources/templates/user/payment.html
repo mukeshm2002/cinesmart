@@ -8,64 +8,38 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
-
-        .payment-container { max-width: 500px; margin: 80px auto; }
-
-        .card-payment {
-            background: #111; border: 1px solid #222; border-radius: 25px;
-            padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        .header-text { font-weight: 700; margin-bottom: 30px; }
-
-        .summary-box { background: #0a0a0a; padding: 20px; border-radius: 15px; border: 1px solid #1a1a1a; }
-
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: #aaa; }
-        .total-row { font-size: 1.5rem; color: #fff; font-weight: 700; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
-
-        .btn-pay {
-            background: #e50914; color: white; font-weight: 700; border-radius: 12px;
-            padding: 15px; width: 100%; border: none; transition: 0.3s; margin-top: 20px;
-        }
-        .btn-pay:hover { background: #ff0a16; transform: translateY(-3px); }
-
-        .lock-icon { color: #28a745; margin-right: 8px; }
+        .payment-container { max-width: 500px; margin: 60px auto; }
+        .card-payment { background: #111; border: 1px solid #222; border-radius: 25px; padding: 40px; }
+        .summary-box { background: #0a0a0a; padding: 25px; border-radius: 20px; border: 1px solid #1a1a1a; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; color: #aaa; }
+        .total-row { font-size: 1.4rem; color: #fff; font-weight: 800; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+        .btn-pay { background: #e50914; color: white; font-weight: 700; border-radius: 12px; padding: 15px; width: 100%; border: none; transition: 0.3s; }
+        .btn-pay:hover { background: #ff0a16; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
 <div class="container payment-container">
     <div class="card-payment">
-        <h3 class="header-text text-center">Checkout</h3>
+        <h3 class="text-center fw-bold mb-4">Complete Payment</h3>
 
         <div class="summary-box">
-            <div class="detail-row"><span>Movie:</span> <span class="text-white" th:text="${show.movie.title}"></span></div>
+            <div class="detail-row"><span>Movie:</span> <span class="text-white fw-bold" th:text="${show.movie.title}"></span></div>
             <div class="detail-row"><span>Seats:</span> <span class="text-white" th:text="${selectedSeats}"></span></div>
             <div class="detail-row"><span>Tickets:</span> <span>₹<span th:text="${ticketAmount}"></span></span></div>
-            <div class="detail-row" th:if="${snackAmount > 0}">
-                <span>Snacks:</span> <span>₹<span th:text="${snackAmount}"></span></span>
-            </div>
-
-            <div class="detail-row total-row">
-                <span>Total</span> <span>₹<span th:text="${totalAmount}"></span></span>
-            </div>
+            <div class="detail-row" th:if="${snackAmount > 0}"><span>Snacks:</span> <span>₹<span th:text="${snackAmount}"></span></span></div>
+            <div class="detail-row total-row"><span>Total Payable</span> <span class="text-danger">₹<span th:text="${totalAmount}"></span></span></div>
         </div>
 
         <form th:action="@{/user/booking/confirm}" method="post">
             <input type="hidden" name="showId" th:value="${show.id}">
             <input type="hidden" name="seats" th:value="${selectedSeats}">
             <input type="hidden" name="amount" th:value="${totalAmount}">
-
-            <button type="submit" class="btn-pay">
-                Pay Securely ₹<span th:text="${totalAmount}"></span>
-            </button>
+            <button type="submit" class="btn-pay">Pay ₹<span th:text="${totalAmount}"></span> Securely</button>
         </form>
 
-        <p class="text-center text-muted small mt-3">
-            <i class="lock-icon">🔒</i> 100% Secure Payment powered by CineSmart
-        </p>
+        <p class="text-center text-muted small mt-4">🔒 100% Encrypted Payment. Your ticket will be mailed instantly.</p>
     </div>
 </div>
-
 </body>
 </html>

@@ -17,19 +17,27 @@ public class Screen {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String screenName; // எ.கா: "Screen 1", "IMAX"
+    @Column(nullable = false, length = 50)
+    private String screenName;
 
     @Column(nullable = false)
-    private Integer totalSeats; // எ.கா: 120
+    private Integer totalSeats;
 
     @Column(nullable = false)
-    private Integer totalRows; // 2D Grid Layout-க்காக (எ.கா: 10 Rows)
+    private Integer totalRows;
 
     @Column(nullable = false)
-    private Integer seatsPerRow; // 2D Grid Layout-க்காக (எ.கா: 12 Seats per Row)
+    private Integer seatsPerRow;
 
-    // One screen can host multiple shows
+    // --- புதிய மாற்றம் ---
+
+    // எந்த தியேட்டருக்கு இந்த ஸ்கிரீன் சொந்தமானது
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "theatre_id", nullable = false)
+    private Theatre theatre;
+
+    // -------------------
+
     @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Show> shows;
 }

@@ -1,216 +1,151 @@
 package com.mk.cinesmart.controller;
 
-import com.mk.cinesmart.model.Show;
-import com.mk.cinesmart.model.User;
+import com.mk.cinesmart.model.*;
 import com.mk.cinesmart.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
-    private MovieService movieService;
+    @Autowired private MovieService movieService;
+    @Autowired private ShowService showService;
+    @Autowired private BookingService bookingService;
+    @Autowired private UserService userService;
+    @Autowired private SnackService snackService;
+    @Autowired private FeedbackService feedbackService;
+    @Autowired private EmailService emailService;
+    @Autowired private TicketService ticketService;
 
-    @Autowired
-    private ShowService showService;
-
-    @Autowired
-    private BookingService bookingService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private SnackService snackService;
-
-    // 1. HOME PAGE - யூசர் லாகின் பண்ண உடனே இருக்குற எல்லா படங்களையும் காட்ட
+    // 1. HOME PAGE
     @GetMapping("/home")
     public String showUserHome(Model model) {
         model.addAttribute("movies", movieService.getAllMovies());
         return "user/home";
     }
 
+    // 2. MOVIE DETAILS
     @GetMapping("/movie/{id}")
     public String showMovieDetails(@PathVariable("id") Long id, Model model) {
-        // 1. Movie இருக்கான்னு செக் பண்ணுங்க
-        var movie = movieService.getMovieById(id);
+        Movie movie = movieService.getMovieById(id);
         if (movie == null) return "redirect:/user/home?error=Movie+Not+Found";
 
         model.addAttribute("movie", movie);
-
-        // 2. ஷோஸ் லிஸ்ட் எடுங்க
-        List<Show> shows = showService.getUpcomingShowsForMovie(id);
-
-        // 💡 இங்க தான் முக்கியமானது: ஷோஸ் லிஸ்ட்டை ஃபில்டர் பண்ணுங்க
-        // ஷோ, மூவி, ஸ்கிரீன் எதுவுமே null-ஆ இல்லாததை மட்டும் அனுப்புங்க
-        if (shows != null) {
-            List<Show> validShows = shows.stream()
-                    .filter(s -> s != null && s.getMovie() != null && s.getScreen() != null)
-                    .collect(Collectors.toList());
-            model.addAttribute("shows", validShows);
-        } else {
-            model.addAttribute("shows", new ArrayList<>());
-        }
-
+        model.addAttribute("shows", showService.getUpcomingShowsForMovie(id));
+        model.addAttribute("feedbacks", feedbackService.getFeedbackByMovie(id));
         return "user/movie-details";
     }
 
+    // 3. FEEDBACK SUBMISSION
+    @PostMapping("/movie/{movieId}/feedback")
+    public String submitFeedback(@PathVariable("movieId") Long movieId,
+                                 @ModelAttribute("feedback") Feedback feedback,
+                                 Principal principal) {
+        User user = userService.findUserByEmail(principal.getName());
+        feedback.setUser(user);
+        feedback.setMovie(movieService.getMovieById(movieId));
+        feedbackService.saveFeedback(feedback);
+        return "redirect:/user/movie/" + movieId + "?success=Feedback+Submitted";
+    }
+
+    // 4. SEAT SELECTION
     @GetMapping("/show/{showId}/seats")
     public String showSeatSelection(@PathVariable("showId") Long showId, Model model) {
         Show show = showService.getShowById(showId);
         model.addAttribute("show", show);
-        model.addAttribute("screen", show.getScreen());
-
-        // புக் ஆன சீட்ஸ்
         model.addAttribute("bookedSeats", bookingService.getBookedSeatsForShow(showId));
-
-        // 💡 ரீசேல் சீட்ஸ் (இது ஒரு List<String> ஆக இருக்கணும்)
-        List<String> resaleList = bookingService.getResaleBookingsByShow(showId).stream()
-                .map(resale -> resale.getSelectedSeats()) // இது சீட்ஸ் லிஸ்ட்னு வச்சுப்போம்
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-        model.addAttribute("resaleSeats", resaleList);
-
-        model.addAttribute("resaleBookings", bookingService.getResaleBookingsByShow(showId));
         return "user/seat-selection";
     }
 
-    // 4. INSTANT CANCELLATION (50% REFUND) BUTTON
-    @PostMapping("/booking/cancel/{bookingId}")
-    public String cancelTicket(@PathVariable("bookingId") Long bookingId) {
-        try {
-            bookingService.cancelBookingInstantly(bookingId);
-            return "redirect:/user/history?success=Ticket+Cancelled.+50%+Refund+Processed!";
-        } catch (Exception e) {
-            return "redirect:/user/history?error=" + e.getMessage();
-        }
-    }
-
-    // 5. POST TICKET TO P2P RESALE MARKETPLACE (YELLOW SEAT LOGIC)
-    @PostMapping("/booking/resale/list/{bookingId}")
-    public String listTicketForResale(@PathVariable("bookingId") Long bookingId) {
-        try {
-            bookingService.listForResale(bookingId);
-            return "redirect:/user/history?success=Ticket+Listed+in+Resale+Marketplace.+Waiting+for+buyers.";
-        } catch (Exception e) {
-            return "redirect:/user/history?error=" + e.getMessage();
-        }
-    }
-
-    // 6. BUY A RESALED TICKET FROM MARKETPLACE (100% REFUND TO SELLER, 10% TO THEATER)
-    @PostMapping("/booking/resale/buy/{originalBookingId}")
-    public String buyResaledTicket(@PathVariable("originalBookingId") Long originalBookingId, Principal principal) {
-        try {
-            User buyer = userService.findUserByEmail(principal.getName());
-            bookingService.purchaseResaledTicket(originalBookingId, buyer);
-            return "redirect:/user/history?success=Resale+Ticket+Purchased+Successfully!";
-        } catch (Exception e) {
-            return "redirect:/user/home?error=" + e.getMessage();
-        }
-    }
-
-    // 7. USER BOOKING HISTORY - யூசரோட பழைய மற்றும் தற்போதைய டிக்கெட் விபரங்கள்
-    @GetMapping("/history")
-    public String showBookingHistory(Model model, Principal principal) {
-        User currentUser = userService.findUserByEmail(principal.getName());
-        model.addAttribute("bookings", bookingService.getBookingsByUser(currentUser.getId()));
-        return "user/history";
-    }
-
-    // 8. 🍿 SHOW CANTEEN SNACKS MENU
+    // 5. SNACKS MENU
     @GetMapping("/show/{showId}/snacks")
-    public String showSnacksMenuPage(@PathVariable("showId") Long showId,
-                                     @RequestParam(value = "seats", required = true) String seats, // value ஆட் பண்ணுங்க
-                                     Model model) {
+    public String showSnacksMenuPage(@PathVariable("showId") Long showId, @RequestParam("seats") String seats, Model model) {
         Show show = showService.getShowById(showId);
-        if (show == null) return "redirect:/user/home?error=Show+Not+Found";
-
+        model.addAttribute("allSnacks", snackService.getActiveSnacksByTheatre(show.getScreen().getTheatre().getId()));
         model.addAttribute("show", show);
-        // இங்க ஏதாவது பார்மட்டிங் தேவைப்பட்டா பண்ணுங்க
         model.addAttribute("selectedSeats", seats);
-        model.addAttribute("allSnacks", snackService.getAllActiveSnacks());
         return "user/snacks-menu";
     }
 
-    // 💳 9. MODIFIED PAYMENT PAGE (💡 FIX: டூப்ளிகேட் நீக்கப்பட்டு ஸ்நாக்ஸ் உடன் கூடிய சிங்கிள் பேமெண்ட் பேஜ்)
+    // 6. PAYMENT PAGE
     @GetMapping("/show/{showId}/payment")
-    public String showPaymentPage(@PathVariable("showId") Long showId,
-                                  @RequestParam("seats") String seats,
+    public String showPaymentPage(@PathVariable("showId") Long showId, @RequestParam("seats") String seats,
                                   @RequestParam("ticketAmount") Double ticketAmount,
-                                  // 💡 ஸ்நாக்ஸ் வாங்கலைனாலும் எர்ரர் வராது (Default values)
-                                  @RequestParam(value = "snackAmount", defaultValue = "0.0") Double snackAmount,
-                                  @RequestParam(value = "snackDetails", defaultValue = "None") String snackDetails,
-                                  Model model) {
-
-        Show show = showService.getShowById(showId);
-
-        // 💡 ஷோ இல்லையென்றால் ஹோம் பேஜுக்கு அனுப்பிடுங்க
-        if (show == null) {
-            return "redirect:/user/home?error=Show+Expired";
-        }
-
-        model.addAttribute("show", show);
+                                  @RequestParam(value = "snackAmount", defaultValue = "0.0") Double snackAmount, Model model) {
+        model.addAttribute("show", showService.getShowById(showId));
         model.addAttribute("selectedSeats", seats);
-        model.addAttribute("ticketAmount", ticketAmount);
-        model.addAttribute("snackAmount", snackAmount);
-        model.addAttribute("snackDetails", snackDetails);
         model.addAttribute("totalAmount", (ticketAmount + snackAmount));
-
         return "user/payment";
     }
 
     @PostMapping("/booking/confirm")
-    public String confirmBooking(
-            @RequestParam("showId") Long showId,
-            @RequestParam("seats") String seats,
-            @RequestParam("amount") Double amount,
-            // 💡 புதுசா இந்த ஸ்நாக்ஸ் லிஸ்ட்டை வாங்கிக்கோங்க
-            @RequestParam(value = "snackIds", required = false) List<Long> snackIds,
-            @RequestParam(value = "quantities", required = false) List<Integer> quantities,
-            Principal principal) {
-        try {
-            User currentUser = userService.findUserByEmail(principal.getName());
-            Show show = showService.getShowById(showId);
-            List<String> seatsList = java.util.Arrays.asList(seats.split(","));
+    public String confirmBooking(@RequestParam("showId") Long showId,
+                                 @RequestParam("seats") String seats,
+                                 @RequestParam("amount") Double amount,
+                                 @RequestParam(value = "snackIds", required = false) List<Long> snackIds,
+                                 @RequestParam(value = "quantities", required = false) List<Integer> quantities,
+                                 Principal principal) {
 
-            // புக்கிங் பில்டர்
-            com.mk.cinesmart.model.Booking booking = com.mk.cinesmart.model.Booking.builder()
-                    .bookingId("CS-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
-                    .bookingDateTime(java.time.LocalDateTime.now())
-                    .selectedSeats(seatsList)
-                    .totalAmount(amount)
-                    .status(com.mk.cinesmart.model.BookingStatus.CONFIRMED)
-                    .user(currentUser)
-                    .show(show)
-                    .build();
+        // 1. தற்போதைய பயனரை கண்டறிதல்
+        User user = userService.findUserByEmail(principal.getName());
+        Show show = showService.getShowById(showId);
 
-            // பேமெண்ட் பில்டர்
-            com.mk.cinesmart.model.Payment payment = com.mk.cinesmart.model.Payment.builder()
-                    .transactionId("TXN-" + java.util.UUID.randomUUID().toString().substring(0, 10).toUpperCase())
-                    .totalPaidAmount(amount)
-                    .refundedAmount(0.0)
-                    .paymentStatus(com.mk.cinesmart.model.PaymentStatus.SUCCESS)
-                    .paymentDateTime(java.time.LocalDateTime.now())
-                    .booking(booking)
-                    .build();
+        // 2. புக்கிங்கை சேமித்தல் (இது Booking object-ஐ ரிட்டர்ன் செய்யும் வகையில் இருக்க வேண்டும்)
+        Booking booking = bookingService.saveNewBooking(user, show, seats, amount, snackIds, quantities);
 
-            booking.setPayment(payment);
+        // 3. டிக்கெட் இமேஜ் உருவாக்குதல் (இதற்கு தனி service/method தேவை)
+        String ticketPath = ticketService.generateTicketImage(booking);
 
-            // 💡 4 ஆர்குமெண்ட்ஸை பாஸ் பண்றோம்
-            bookingService.saveNewBooking(booking, payment, snackIds, quantities);
+        // 4. மின்னஞ்சல் விவரங்களை தயார் செய்தல்
+        String movieTitle = show.getMovie().getTitle();
+        String subject = "CineSmart - Your Ticket Confirmed!";
+        String body = "Dear " + user.getName() + ",\n\nYour booking for '" + movieTitle +
+                "' is confirmed.\nSeats: " + seats + "\nAmount: ₹" + amount +
+                "\n\nThank you for choosing CineSmart!";
 
-            return "redirect:/user/history?success=Ticket+Booked+Successfully!";
-        } catch (Exception e) {
-            return "redirect:/user/home?error=" + e.getMessage();
-        }
+        // 5. மின்னஞ்சல் அனுப்புதல்
+        emailService.sendTicketEmail(user.getEmail(), subject, body, ticketPath);
+
+        return "redirect:/user/history?success=Booked+Successfully";
     }
 
+    // 8. BOOKING HISTORY & MANAGEMENT
+    @GetMapping("/history")
+    public String showBookingHistory(Model model, Principal principal) {
+        User user = userService.findUserByEmail(principal.getName());
+        model.addAttribute("bookings", bookingService.getBookingsByUser(user.getId()));
+        return "user/history";
+    }
+
+    // --- NEWLY ADDED P2P RESALE & CANCELLATION LOGIC ---
+
+    // 9. INSTANT CANCELLATION (50% REFUND)
+    @PostMapping("/booking/cancel/{bookingId}")
+    public String cancelTicket(@PathVariable("bookingId") Long bookingId) {
+        bookingService.cancelBookingInstantly(bookingId);
+        return "redirect:/user/history?success=Ticket+Cancelled+with+50%+Refund";
+    }
+
+    // 10. LIST TICKET FOR RESALE
+    @PostMapping("/booking/resale/list/{bookingId}")
+    public String listTicketForResale(@PathVariable("bookingId") Long bookingId) {
+        // உங்களுடைய BookingService-ல் listForResale மெத்தட் இருக்கிறதா என சரிபார்க்கவும்
+        bookingService.listForResale(bookingId);
+        return "redirect:/user/history?success=Ticket+Listed+for+Resale";
+    }
+
+    // 11. BUY RESALED TICKET
+    @PostMapping("/booking/resale/buy/{originalBookingId}")
+    public String buyResaledTicket(@PathVariable("originalBookingId") Long originalBookingId, Principal principal) {
+        User buyer = userService.findUserByEmail(principal.getName());
+        bookingService.purchaseResaledTicket(originalBookingId, buyer);
+        return "redirect:/user/history?success=Resale+Ticket+Purchased+Successfully";
+    }
 }

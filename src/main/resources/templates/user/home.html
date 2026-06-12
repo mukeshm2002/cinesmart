@@ -10,11 +10,13 @@
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
 
         /* Glassmorphism Navbar */
-        .navbar { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(15px); padding: 1.2rem 2rem; border-bottom: 1px solid #1a1a1a; }
+        .navbar { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(15px); padding: 1rem 2rem; border-bottom: 1px solid #1a1a1a; }
         .navbar-brand { font-weight: 800; letter-spacing: -1px; }
+        .nav-link { color: #ccc !important; font-weight: 500; transition: 0.3s; }
+        .nav-link:hover { color: #fff !important; }
 
         /* Hero Section */
-        .hero { height: 50vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.5), #050505), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1600'); background-size: cover; background-position: center; }
+        .hero { height: 50vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.6), #050505), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1600'); background-size: cover; background-position: center; }
         .hero h1 { font-weight: 800; font-size: 3.5rem; letter-spacing: -2px; }
 
         /* Movie Card Premium Look */
@@ -25,31 +27,43 @@
         .movie-card:hover .movie-poster { transform: scale(1.05); }
 
         .overlay { padding: 20px; }
-
-        /* Updated Title & Genre Style */
-        .movie-title {
-            font-weight: 800;
-            font-size: 1.4rem;
-            color: #ffffff;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .movie-genre {
-            color: #a0a0a0;
-            font-size: 0.85rem;
-            margin-bottom: 15px;
-        }
+        .movie-title { font-weight: 800; font-size: 1.4rem; color: #ffffff; margin-bottom: 5px; }
+        .movie-genre { color: #a0a0a0; font-size: 0.85rem; margin-bottom: 15px; }
 
         .btn-netflix { background: #e50914; color: white; border-radius: 8px; font-weight: 600; padding: 12px; transition: 0.3s; }
         .btn-netflix:hover { background: #ff0a16; transform: scale(1.02); }
+
+        /* Dropdown fix */
+        .dropdown-menu { background: #111; border: 1px solid #222; }
+        .dropdown-item { color: #ccc; }
+        .dropdown-item:hover { background: #1a1a1a; color: #fff; }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <a class="navbar-brand text-danger fs-2" th:href="@{/user/home}">CINESMART</a>
-    <div class="ms-auto">
-        <a th:href="@{/user/history}" class="btn btn-outline-light btn-sm px-4">My Bookings</a>
+    <div class="container">
+        <a class="navbar-brand text-danger fs-2" th:href="@{/user/home}">CINESMART</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center gap-3">
+                <li class="nav-item"><a class="nav-link" th:href="@{/user/home}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/user/upcoming}">Upcoming</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/user/history}">My Bookings</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=User&background=e50914&color=fff" width="35" height="35" class="rounded-circle">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/user/profile}">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" th:href="@{/logout}">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </div>
 </nav>
 
@@ -62,7 +76,6 @@
 
 <div class="container py-5">
     <h3 class="fw-bold mb-4">Now Playing</h3>
-
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         <div class="col" th:each="movie : ${movies}">
             <div class="card movie-card h-100">

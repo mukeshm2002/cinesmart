@@ -8,14 +8,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
-        .snack-card { background: #111; border: 1px solid #222; border-radius: 15px; }
+        .snack-card { background: #111; border: 1px solid #222; border-radius: 15px; transition: 0.3s; }
+        .snack-card:hover { border-color: #e50914; }
         .snack-img { height: 120px; object-fit: cover; border-radius: 15px 15px 0 0; }
-        .btn-qty { background: #333; border: none; color: #fff; width: 30px; height: 30px; border-radius: 8px; }
+        .btn-qty { background: #e50914; border: none; color: #fff; width: 30px; height: 30px; border-radius: 8px; font-weight: bold; }
+        .btn-qty:disabled { background: #333; }
 
-        /* Fixed Bottom Summary */
         .mobile-summary {
-            position: fixed; bottom: 0; left: 0; right: 0; background: #111;
-            padding: 15px; border-top: 2px solid #e50914; z-index: 1000;
+            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17,17,17,0.95);
+            backdrop-filter: blur(10px); padding: 15px; border-top: 1px solid #333; z-index: 1000;
             display: flex; justify-content: space-between; align-items: center;
         }
 
@@ -30,19 +31,21 @@
 <body>
 
 <div class="container py-4">
+    <a th:href="@{'/user/show/' + ${show.id} + '/seats'}" class="text-secondary text-decoration-none mb-3 d-block"><i class="fas fa-arrow-left"></i> Change Seats</a>
     <h2 class="fw-bold mb-4">🍿 Refreshments</h2>
+
     <div class="row">
         <div class="col-lg-8">
             <div class="row row-cols-2 row-cols-md-3 g-3 pb-5">
                 <div class="col" th:each="snack : ${allSnacks}">
                     <div class="card snack-card h-100">
-                        <img th:src="${snack.imageUrl}" class="snack-img" alt="Item">
+                        <img th:src="${snack.imageUrl}" class="snack-img" alt="Snack">
                         <div class="card-body p-2">
-                            <h6 class="fw-bold mb-1" th:text="${snack.itemName}">Item</h6>
+                            <h6 class="fw-bold mb-1 text-truncate" th:text="${snack.itemName}">Item</h6>
                             <p class="text-danger fw-bold mb-2">₹<span th:text="${snack.price}">0</span></p>
                             <div class="d-flex align-items-center gap-2">
                                 <button class="btn-qty" th:onclick="updateQty([[${snack.id}]], [[${snack.itemName}]], [[${snack.price}]], -1)">-</button>
-                                <span th:id="'qty-' + ${snack.id}" class="fw-bold px-1">0</span>
+                                <span th:id="'qty-' + ${snack.id}" class="fw-bold px-2">0</span>
                                 <button class="btn-qty" th:onclick="updateQty([[${snack.id}]], [[${snack.itemName}]], [[${snack.price}]], 1)">+</button>
                             </div>
                         </div>
@@ -52,10 +55,11 @@
         </div>
 
         <div class="col-lg-4 desktop-summary">
-            <div class="sticky-summary bg-dark p-4 rounded-4">
+            <div class="sticky-summary bg-dark p-4 rounded-4 border border-secondary">
                 <h5 class="fw-bold">Order Summary</h5>
                 <div id="snackCartListDesktop" class="my-3 border-top border-secondary py-2 small"></div>
-                <h4 class="text-success fw-bold">Total: <span id="liveTotalDesktop">₹0</span></h4>
+                <hr>
+                <h4 class="text-white fw-bold">Total: <span id="liveTotalDesktop" class="text-danger">₹0</span></h4>
                 <button class="btn btn-danger w-100 py-3 mt-3 fw-bold" onclick="proceedToBill()">Pay Securely</button>
             </div>
         </div>
@@ -63,8 +67,8 @@
 </div>
 
 <div class="mobile-summary">
-    <div class="fw-bold">Total: <span id="liveTotalMobile">₹0</span></div>
-    <button class="btn btn-danger fw-bold px-4" onclick="proceedToBill()">Pay Securely</button>
+    <div class="fw-bold fs-5">Total: <span id="liveTotalMobile" class="text-danger">₹0</span></div>
+    <button class="btn btn-danger fw-bold px-4 py-2" onclick="proceedToBill()">Pay Securely</button>
 </div>
 
 <script th:inline="javascript">
@@ -84,13 +88,18 @@
 
     function renderCart() {
         let snackTotal = 0;
-        let html = '';
-        Object.keys(cart).forEach(id => {
-            snackTotal += (cart[id].price * cart[id].qty);
-            html += `<div class="d-flex justify-content-between mb-1"><span>${cart[id].name} x${cart[id].qty}</span><span>₹${cart[id].price * cart[id].qty}</span></div>`;
-        });
+        let html = '<div class="text-muted text-center py-2">No items added</div>';
 
-        document.getElementById('snackCartListDesktop').innerHTML = html || 'No items added';
+        const keys = Object.keys(cart);
+        if (keys.length > 0) {
+            html = '';
+            keys.forEach(id => {
+                snackTotal += (cart[id].price * cart[id].qty);
+                html += `<div class="d-flex justify-content-between mb-2"><span>${cart[id].name} x${cart[id].qty}</span><span>₹${cart[id].price * cart[id].qty}</span></div>`;
+            });
+        }
+
+        document.getElementById('snackCartListDesktop').innerHTML = html;
         const finalTotal = ticketTotalAmount + snackTotal;
         document.getElementById('liveTotalDesktop').innerText = '₹' + finalTotal;
         document.getElementById('liveTotalMobile').innerText = '₹' + finalTotal;
@@ -105,8 +114,6 @@
         });
         window.location.href = `/user/show/${showId}/payment?seats=${encodeURIComponent(seats)}&ticketAmount=${ticketTotalAmount}&snackAmount=${snackTotal}&snackDetails=${encodeURIComponent(snackStrings.join(', '))}&snackIds=${snackIds.join(',')}&quantities=${quantities.join(',')}`;
     }
-
-    document.addEventListener("DOMContentLoaded", renderCart);
 </script>
 </body>
 </html>

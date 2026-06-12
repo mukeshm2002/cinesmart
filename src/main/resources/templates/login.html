@@ -16,29 +16,20 @@
         }
         .login-card {
             background: rgba(17, 17, 17, 0.9); border: 1px solid #333;
-            border-radius: 25px; padding: 50px; width: 100%; max-width: 450px;
+            border-radius: 25px; padding: 40px; width: 100%; max-width: 450px;
             backdrop-filter: blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
-        /* டெக்ஸ்ட் தெளிவா தெரியுற மாதிரி மாத்தியிருக்கேன் */
         .form-control {
-            background: #1a1a1a !important;
-            border: 1px solid #444;
-            color: #ffffff !important;
-            border-radius: 12px;
-            padding: 15px;
-            font-size: 1rem;
+            background: #1a1a1a !important; border: 1px solid #444; color: #ffffff !important;
+            border-radius: 12px; padding: 15px; font-size: 1rem;
         }
-        .form-control::placeholder { color: #888; }
         .form-control:focus { border-color: #e50914; box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25); }
-
         .btn-login {
             background: #e50914; color: white; padding: 15px;
             border-radius: 12px; font-weight: 700; transition: 0.3s; border: none;
         }
         .btn-login:hover { background: #ff0a16; transform: translateY(-2px); }
-        .brand-text { font-size: 2rem; font-weight: 800; color: #e50914; margin-bottom: 5px; }
-
-        /* பாஸ்வேர்ட் ஐகான் ஸ்டைல் */
+        .brand-text { font-size: 2rem; font-weight: 800; color: #e50914; }
         .input-group-text { background: #1a1a1a; border: 1px solid #444; color: #888; cursor: pointer; border-radius: 0 12px 12px 0; }
     </style>
 </head>
@@ -47,16 +38,20 @@
 <div class="login-card">
     <div class="text-center mb-4">
         <div class="brand-text">CineSmart</div>
-        <p class="text-secondary">Welcome back to the magic of cinema.</p>
+        <p class="text-secondary small">Welcome back to the magic of cinema.</p>
     </div>
 
-    <form th:action="@{/login}" method="post">
+    <div th:if="${param.error}" class="alert alert-danger py-2 mb-3 small text-center" style="background: rgba(220, 53, 69, 0.2); border: none; color: #ff8585;">
+        Invalid email or password!
+    </div>
+
+    <form th:action="@{/login}" method="post" onsubmit="this.querySelector('button').innerText='Signing In...'; this.querySelector('button').disabled=true;">
         <div class="mb-4">
-            <label class="mb-2">Email</label>
+            <label class="mb-2 text-secondary small">Email Address</label>
             <input type="email" class="form-control" name="email" required placeholder="Enter your email">
         </div>
         <div class="mb-4">
-            <label class="mb-2">Password</label>
+            <label class="mb-2 text-secondary small">Password</label>
             <div class="input-group">
                 <input type="password" class="form-control" id="password" name="password" required placeholder="Enter password">
                 <span class="input-group-text" onclick="togglePassword()">
@@ -67,7 +62,7 @@
         <button type="submit" class="btn btn-login w-100">Sign In</button>
     </form>
 
-    <div class="text-center mt-4 text-secondary">
+    <div class="text-center mt-4 text-secondary small">
         New here? <a th:href="@{/register}" class="text-white fw-bold text-decoration-none">Create an account</a>
     </div>
 </div>
@@ -78,12 +73,10 @@
         const toggleIcon = document.getElementById("toggleIcon");
         if (passwordField.type === "password") {
             passwordField.type = "text";
-            toggleIcon.classList.remove("fa-eye");
-            toggleIcon.classList.add("fa-eye-slash");
+            toggleIcon.classList.replace("fa-eye", "fa-eye-slash");
         } else {
             passwordField.type = "password";
-            toggleIcon.classList.remove("fa-eye-slash");
-            toggleIcon.classList.add("fa-eye");
+            toggleIcon.classList.replace("fa-eye-slash", "fa-eye");
         }
     }
 </script>

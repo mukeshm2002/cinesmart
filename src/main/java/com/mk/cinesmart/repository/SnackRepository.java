@@ -10,13 +10,13 @@ import java.util.List;
 @Repository
 public interface SnackRepository extends JpaRepository<Snack, Long> {
 
-    // 💡 அட்மின் அலர்ட்டுக்காக
-    @Query("SELECT s FROM Snack s WHERE s.availableStock <= :threshold")
-    List<Snack> findLowStockSnacks(@Param("threshold") Integer threshold);
+    // அட்மின் அலர்ட்டுக்காக - குறிப்பிட்ட தியேட்டரில் ஸ்டாக் குறையும் போது
+    @Query("SELECT s FROM Snack s WHERE s.availableStock <= :threshold AND s.theatre.id = :theatreId")
+    List<Snack> findLowStockSnacksByTheatre(@Param("threshold") Integer threshold, @Param("theatreId") Long theatreId);
 
-    // 💡 யூசர் ஆர்டர் ஸ்கிரீனுக்காக
-    List<Snack> findAllByOrderByPriceAsc();
+    // யூசர் ஆர்டர் ஸ்கிரீனுக்காக - குறிப்பிட்ட தியேட்டரின் ஸ்நாக்ஸ் மட்டும்
+    List<Snack> findByTheatreIdOrderByPriceAsc(Long theatreId);
 
-    // 💡 ஆக்டிவ் ஸ்நாக்ஸை பில்டர் பண்ண
-    List<Snack> findByAvailableStockGreaterThan(int minStock);
+    // ஆக்டிவ் ஸ்நாக்ஸை தியேட்டர் வாரியாக பில்டர் பண்ண
+    List<Snack> findByTheatreIdAndAvailableStockGreaterThan(Long theatreId, int minStock);
 }

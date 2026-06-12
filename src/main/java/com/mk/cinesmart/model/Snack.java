@@ -27,4 +27,8 @@ public class Snack {
 
     @Column(nullable = false)
     private String imageUrl; // Cloudinary image URL
+
+    @ManyToOne
+    @JoinColumn(name = "theatre_id")
+    private Theatre theatre;
 }
