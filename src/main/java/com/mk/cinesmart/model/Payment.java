@@ -18,23 +18,25 @@ public class Payment {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String transactionId; // Gateway-ல இருந்து வர்ற ID (எ.கா: TXN-9834721)
+    private String transactionId;
 
     @Column(nullable = false)
-    private Double totalPaidAmount; // யூசர் பே பண்ண மொத்த காசு
+    private Double totalPaidAmount;
 
     @Column(nullable = false)
-    @Builder.Default // Lombok இருந்தால் இதை சேர்க்கவும்
-    private Double refundedAmount = 0.0;// ரீஃபண்ட் பண்ண காசு (0.00 / 50% / 100%)
+    @Builder.Default
+    private Double refundedAmount = 0.0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private PaymentStatus paymentStatus;
 
     @Column(nullable = false)
-    private LocalDateTime paymentDateTime;
+    @Builder.Default
+    private LocalDateTime paymentDateTime = LocalDateTime.now(); // ஆட்டோமேட்டிக்காக தற்போதைய நேரம்
 
-    @OneToOne(fetch = FetchType.LAZY)
+    // CascadeType.ALL கொடுத்தால் தான் Booking சேமிக்கப்படும்போது Payment-ம் சரியாக சேமிக்கப்படும்
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 }

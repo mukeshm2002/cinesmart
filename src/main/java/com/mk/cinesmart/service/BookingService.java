@@ -93,20 +93,22 @@ public class BookingService {
                 .status(BookingStatus.CONFIRMED)
                 .user(user)
                 .show(show)
-                .theatreId(theatreId) // பாதுகாப்பாக பெறப்பட்ட ID
+                .theatreId(theatreId)
                 .build();
 
-        // 3. Payment உருவாக்கல்
+        // 3. Payment உருவாக்கல் (Booking-ஐ இதனுள் இணைத்தல்)
         Payment payment = Payment.builder()
                 .transactionId("TXN-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase())
                 .totalPaidAmount(amount)
                 .paymentStatus(PaymentStatus.SUCCESS)
-                .booking(booking)
+                .paymentDateTime(LocalDateTime.now()) // நேரத்தைச் சரியாகச் சேர்க்கவும்
+                .booking(booking) // இது மிக முக்கியம்
                 .build();
 
+        // Booking-ல் Payment-ஐ செட் செய்தல்
         booking.setPayment(payment);
 
-        // 4. Update Seats (Null check included)
+        // 4. Update Seats Stock
         if (show.getAvailableSeats() != null) {
             show.setAvailableSeats(show.getAvailableSeats() - seatsList.size());
             showRepository.save(show);
@@ -121,8 +123,7 @@ public class BookingService {
             }
         }
 
-        // 6. Save data
-        paymentRepository.save(payment);
+        // 6. Booking-ஐ மட்டும் சேமிக்கவும் (CascadeType.ALL இருப்பதால் Payment தானாகச் சேமிக்கப்படும்)
         return bookingRepository.save(booking);
     }
 
