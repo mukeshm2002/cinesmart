@@ -64,10 +64,21 @@ public class UserController {
 
     // 4. SEAT SELECTION
     @GetMapping("/show/{showId}/seats")
-    public String showSeatSelection(@PathVariable("showId") Long showId, Model model) {
+    public String showSeatSelection(@PathVariable Long showId, Model model) {
         Show show = showService.getShowById(showId);
+
+        // முக்கியமானது: ஷோ மூலம் ஸ்கிரீனை எடுக்க வேண்டும்
+        if (show == null || show.getScreen() == null) {
+            return "redirect:/user/home?error=Show+Details+Missing";
+        }
+
         model.addAttribute("show", show);
+        model.addAttribute("screen", show.getScreen()); // இந்த லைன் விடுபட்டிருந்தது!
         model.addAttribute("bookedSeats", bookingService.getBookedSeatsForShow(showId));
+
+        // resaleSeats உங்கள் சர்வீஸில் இருந்தால் அதை இங்கேயும் சேர்க்கவும்
+        //model.addAttribute("resaleSeats", bookingService.getResaleSeatsForShow(showId));
+
         return "user/seat-selection";
     }
 

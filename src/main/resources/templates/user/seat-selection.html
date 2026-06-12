@@ -8,47 +8,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
-
-        .theatre-room {
-            background: #0a0a0a; border: 1px solid #222; padding: 40px;
-            border-radius: 20px; overflow-x: auto; perspective: 1000px;
-        }
-
-        .cinema-screen {
-            height: 4px; width: 70%; background: #fff; margin: 0 auto 50px auto;
-            box-shadow: 0 0 20px rgba(255,255,255,0.5); border-radius: 5px;
-        }
-
+        .theatre-room { background: #0a0a0a; border: 1px solid #222; padding: 40px; border-radius: 20px; overflow-x: auto; }
+        .cinema-screen { height: 4px; width: 70%; background: #fff; margin: 0 auto 50px auto; box-shadow: 0 0 20px rgba(255,255,255,0.5); border-radius: 5px; }
         .seat-grid { display: flex; flex-direction: column; align-items: center; }
-
-        /* வளைவான வரிசை அமைப்புக்காக */
-        .seat-row {
-            display: flex; gap: 10px; margin-bottom: 12px; align-items: center; justify-content: center;
-            transition: 0.3s;
-        }
-        .seat-row:nth-child(even) { transform: scale(0.98); }
-        .seat-row:nth-child(3n) { margin-left: 15px; }
-
+        .seat-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; justify-content: center; }
         .row-label { width: 30px; font-weight: 700; color: #555; font-size: 0.8rem; }
-
-        .seat {
-            width: 40px; height: 40px; background: #1a1a1a; border: 1px solid #333;
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; font-size: 0.75rem; font-weight: 600; color: #666;
-        }
-        .seat:hover:not(.booked) { border-color: #e50914; color: #fff; }
-        .seat.selected { background: #e50914 !important; border: 1px solid #ff0a16; color: #fff; transform: scale(1.1); }
-        .seat.booked { background: #111; opacity: 0.2; cursor: not-allowed; border: none; }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-            70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
-        }
-        .seat.resale { background: #ffc107; color: #000; border: 1px solid #d39e00; animation: pulse 2s infinite; }
-
-        .legend-box { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
-        .leg-circle { width: 14px; height: 14px; border-radius: 4px; display: inline-block; margin-right: 5px; }
+        .seat { width: 40px; height: 40px; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; font-weight: 600; color: #666; }
+        .seat.selected { background: #e50914 !important; border-color: #ff0a16; color: #fff; }
+        .seat.booked { background: #111; opacity: 0.3; cursor: not-allowed; border: none; }
+        .seat.resale { background: #ffc107; color: #000; border: 1px solid #d39e00; }
     </style>
 </head>
 <body>
@@ -63,22 +31,19 @@
                     <div class="seat-row" th:each="r : ${#numbers.sequence(1, screen.totalRows)}">
                         <span class="row-label" th:text="${'R' + r}"></span>
 
-                        <div th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}"
-                             th:with="seatNo=${'R' + r + '-' + s}"
-                             th:style="${s == (screen.seatsPerRow / 2) ? 'margin-right: 30px;' : ''}"> <div class="seat" th:id="${seatNo}"
-                                                                                                            th:classappend="${(bookedSeats != null && #lists.contains(bookedSeats, seatNo)) ? 'booked' : (resaleSeats != null && #lists.contains(resaleSeats, seatNo)) ? 'resale' : 'available'}"
-                                                                                                            onclick="toggleSeat(this)">
-                            <span th:if="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}">R</span>
-                            <span th:unless="${resaleSeats != null && #lists.contains(resaleSeats, seatNo)}" th:text="${s}"></span>
-                        </div>
-                        </div>
-                    </div>
-                </div>
+                        <th:block th:each="s : ${#numbers.sequence(1, screen.seatsPerRow)}">
+                            <div th:with="seatNo=${'R' + r + '-' + s}"
+                                 th:classappend="${s == (screen.seatsPerRow / 2) ? 'me-4' : ''}">
 
-                <div class="legend-box">
-                    <div class="small"><span class="leg-circle" style="background:#1a1a1a; border:1px solid #333"></span> Available</div>
-                    <div class="small"><span class="leg-circle" style="background:#e50914"></span> Selected</div>
-                    <div class="small"><span class="leg-circle" style="background:#ffc107"></span> Resale</div>
+                                <div class="seat"
+                                     th:id="${seatNo}"
+                                     th:classappend="${(bookedSeats != null && #lists.contains(bookedSeats, seatNo)) ? 'booked' : ((resaleSeats != null && #lists.contains(resaleSeats, seatNo)) ? 'resale' : 'available')}"
+                                     onclick="toggleSeat(this)">
+                                    <span th:text="${(resaleSeats != null && #lists.contains(resaleSeats, seatNo)) ? 'R' : s}"></span>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
                 </div>
             </div>
         </div>
@@ -125,7 +90,7 @@
     function goToPayment() {
         if (selectedSeatsList.length === 0) return alert("Select at least one seat!");
         const showId = /*[[${show.id}]]*/ 0;
-        window.location.href = `/user/show/${showId}/snacks?seats=${selectedSeatsList.join(',')}&total=${totalAmount}`;
+        window.location.href = `/user/show/${showId}/snacks?seats=${selectedSeatsList.join(',')}&ticketAmount=${totalAmount}`;
     }
 </script>
 </body>
