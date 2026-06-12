@@ -25,16 +25,26 @@
         <div th:if="${error}" class="alert alert-danger bg-transparent border-danger text-danger mb-4" th:text="${error}"></div>
 
         <form th:action="@{/super-admin/theatre-admin/save}" th:object="${user}" method="post"
-              onsubmit="this.querySelector('button').innerText='Creating...'; this.querySelector('button').disabled=true;">
+              onsubmit="this.querySelector('button').innerText='Processing...'; this.querySelector('button').disabled=true;">
 
             <div class="mb-3">
                 <label>Full Name</label>
-                <input type="text" th:field="*{name}" class="form-control" required placeholder="Enter full name">
+                <input type="text" th:field="*{name}" class="form-control" required placeholder="Ex: John Doe">
             </div>
 
             <div class="mb-3">
                 <label>Email Address</label>
                 <input type="email" th:field="*{email}" class="form-control" required placeholder="admin@theatre.com">
+            </div>
+
+            <div class="mb-3">
+                <label>Mobile Number</label>
+                <input type="tel" th:field="*{mobileNumber}" class="form-control" required placeholder="9876543210">
+            </div>
+
+            <div class="mb-3">
+                <label>Assign Theatre Name</label>
+                <input type="text" th:field="*{theatreName}" class="form-control" required placeholder="Ex: PVR Cinemas">
             </div>
 
             <div class="mb-4">

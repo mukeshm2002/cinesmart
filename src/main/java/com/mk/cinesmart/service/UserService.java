@@ -3,6 +3,7 @@ package com.mk.cinesmart.service;
 import com.mk.cinesmart.model.User;
 import com.mk.cinesmart.model.UserRole;
 import com.mk.cinesmart.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,19 +54,18 @@ public class UserService {
 
     // 3. CREATE THEATRE ADMIN
     // UserService.java-வில் மாற்றவும்
+    @Transactional // இதைச் சேர்த்துக் கொள்ளுங்கள்
     public User createTheatreAdmin(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email already exists!");
         }
+
+        // பாஸ்வேர்டு என்க்ரிப்ஷன்
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.ROLE_THEATRE_ADMIN);
 
-        try {
-            return userRepository.save(user); // பிழை ஏற்படும் இடம்
-        } catch (Exception e) {
-            e.printStackTrace(); // இதுதான் ரெண்டர் லாக்ஸில் உண்மையான காரணத்தை காட்டும்
-            throw e;
-        }
+        // இதை செக்யூர் செய்யுங்கள்
+        return userRepository.save(user);
     }
 
     // 4. FIND USER
