@@ -84,17 +84,16 @@ public class SuperAdminController {
         return "super-admin/add-upcoming-movie";
     }
 
-    // 2. அப்-கமிங் மூவி சேமிக்கும் மெத்தட்
+    // SuperAdminController.java
     @PostMapping("/upcoming/save")
-    public String saveUpcomingMovie(@ModelAttribute("upcomingMovie") UpcomingMovie upcomingMovie,
+    public String saveUpcomingMovie(@ModelAttribute("movie") UpcomingMovie movie, // இங்கேயும் "movie" என மாற்றவும்
                                     @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
                                     Model model) {
         try {
-            // UpcomingMovieService-லும் இதே போன்ற save மெத்தடை வைத்துக்கொள்ளவும்
-            upcomingMovieService.saveUpcomingMovie(upcomingMovie, posterFile);
-            return "redirect:/super-admin/dashboard?success=Upcoming+Movie+Added+Successfully";
-        } catch (IOException e) {
-            model.addAttribute("error", "Image upload failed: " + e.getMessage());
+            upcomingMovieService.saveUpcomingMovie(movie, posterFile);
+            return "redirect:/super-admin/dashboard?success=Movie+Added";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error: " + e.getMessage());
             return "super-admin/add-upcoming-movie";
         }
     }
