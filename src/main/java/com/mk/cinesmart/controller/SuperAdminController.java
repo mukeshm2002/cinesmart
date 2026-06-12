@@ -81,20 +81,25 @@ public class SuperAdminController {
     @GetMapping("/upcoming/add")
     public String showAddUpcomingMoviePage(Model model) {
         model.addAttribute("movie", new UpcomingMovie());
-        return "super-admin/add-upcoming-movie";
+        return "super-admin/add-upcoming";
     }
 
-    // SuperAdminController.java
     @PostMapping("/upcoming/save")
-    public String saveUpcomingMovie(@ModelAttribute("movie") UpcomingMovie movie, // இங்கேயும் "movie" என மாற்றவும்
+    public String saveUpcomingMovie(@ModelAttribute("movie") UpcomingMovie upcomingMovie,
                                     @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
                                     Model model) {
+        // இதைச் சேர்க்கவும்
+        System.out.println("DEBUG: Movie received: " + (upcomingMovie != null ? upcomingMovie.getTitle() : "NULL"));
+        System.out.println("DEBUG: File received: " + (posterFile != null ? posterFile.getOriginalFilename() : "NO FILE"));
+
         try {
-            upcomingMovieService.saveUpcomingMovie(movie, posterFile);
-            return "redirect:/super-admin/dashboard?success=Movie+Added";
+            upcomingMovieService.saveUpcomingMovie(upcomingMovie, posterFile);
+            return "redirect:/super-admin/dashboard?success=Saved";
         } catch (Exception e) {
-            model.addAttribute("error", "Error: " + e.getMessage());
-            return "super-admin/add-upcoming-movie";
+            // பிழையை கன்சோலில் விரிவாக அச்சிட
+            e.printStackTrace();
+            model.addAttribute("error", "Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            return "super-admin/add-upcoming";
         }
     }
 
