@@ -45,6 +45,30 @@ public class TheatreAdminController {
         return "theatre-admin/dashboard";
     }
 
+    // --- SHOW ADD PAGE (GET) ---
+    @GetMapping("/show/add")
+    public String showAddShowForm(Model model, Principal principal) {
+        Long tId = getTheatreId(principal);
+        model.addAttribute("show", new Show());
+        model.addAttribute("movies", movieService.getAllMovies()); // எல்லா மூவீஸையும் காட்ட
+        model.addAttribute("screens", screenService.getScreensByTheatre(tId)); // இந்த தியேட்டரின் ஸ்கிரீன்களை மட்டும் காட்ட
+        return "theatre-admin/add-show";
+    }
+
+    // --- SCREEN ADD PAGE (GET) ---
+    @GetMapping("/screen/add")
+    public String showAddScreenForm(Model model) {
+        model.addAttribute("screen", new Screen());
+        return "theatre-admin/add-screen";
+    }
+
+    // --- SNACK ADD PAGE (GET) ---
+    @GetMapping("/snack/add")
+    public String showAddSnackForm(Model model) {
+        model.addAttribute("snack", new Snack());
+        return "theatre-admin/add-snack";
+    }
+
     // --- SCREEN CRUD ---
     @PostMapping("/screen/save")
     public String saveScreen(@ModelAttribute("screen") Screen screen, Principal principal) {
