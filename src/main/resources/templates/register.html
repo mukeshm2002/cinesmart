@@ -9,28 +9,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop');
-            background-size: cover; background-position: center;
-            color: #fff; font-family: 'Montserrat', sans-serif;
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 0;
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop');
+            background-size: cover; background-position: center; color: #fff;
+            font-family: 'Montserrat', sans-serif; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .register-card {
-            background: rgba(17, 17, 17, 0.95); border: 1px solid #333;
-            border-radius: 25px; padding: 40px; width: 100%; max-width: 500px;
-            backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            background: rgba(10, 10, 10, 0.9); border: 1px solid #333;
+            border-radius: 20px; padding: 40px; width: 100%; max-width: 450px;
+            backdrop-filter: blur(10px); box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
-        .form-control, .form-select {
-            background: #1a1a1a !important; border: 1px solid #444; color: #ffffff !important;
-            border-radius: 12px; padding: 12px; font-size: 1rem;
+        .form-control {
+            background: #1a1a1a !important; border: 1px solid #444; color: #fff !important;
+            border-radius: 10px; padding: 12px; margin-bottom: 15px;
         }
-        .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25); }
+        .form-control:focus { border-color: #e50914; box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25); }
         .btn-register {
-            background: #e50914; color: white; padding: 14px;
-            border-radius: 12px; font-weight: 700; transition: 0.3s; border: none;
+            background: #e50914; color: white; padding: 12px; border-radius: 10px;
+            font-weight: 700; transition: 0.3s; border: none; width: 100%;
         }
         .btn-register:hover { background: #ff0a16; transform: translateY(-2px); }
-        label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 8px; }
-        .input-group-text { background: #1a1a1a; border: 1px solid #444; color: #888; cursor: pointer; border-radius: 0 12px 12px 0; }
+        label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #bbb; margin-bottom: 5px; }
+        .input-group-text { background: #1a1a1a; border: 1px solid #444; color: #888; cursor: pointer; border-radius: 0 10px 10px 0; }
     </style>
 </head>
 <body>
@@ -38,38 +38,33 @@
 <div class="register-card">
     <div class="text-center mb-4">
         <h3 class="fw-bold">Create Account</h3>
-        <p class="text-secondary small">Start your movie journey with CineSmart</p>
+        <p class="text-secondary small">Join CineSmart and book your shows</p>
     </div>
 
-    <div th:if="${error}" class="alert alert-danger bg-transparent border-danger text-danger py-2 small" th:text="${error}"></div>
+    <div th:if="${error}" class="alert alert-danger p-2 text-center small" th:text="${error}"></div>
 
-    <form th:action="@{/register}" th:object="${user}" method="post" onsubmit="this.querySelector('button').innerText='Processing...'; this.querySelector('button').disabled=true;">
-        <div class="mb-3">
-            <label>Full Name</label>
-            <input type="text" th:field="*{name}" class="form-control" required placeholder="Ex: Mukesh MK">
-        </div>
-        <div class="mb-3">
-            <label>Email Address</label>
-            <input type="email" th:field="*{email}" class="form-control" required placeholder="Ex: mk@example.com">
-        </div>
-        <div class="mb-3">
-            <label>Mobile Number</label>
-            <input type="text" th:field="*{mobileNumber}" class="form-control" required placeholder="Ex: 9876543210">
-        </div>
-        <div class="mb-3">
-            <label>Password</label>
-            <div class="input-group">
-                <input type="password" th:field="*{password}" class="form-control" id="password" required placeholder="••••••••">
-                <span class="input-group-text" onclick="togglePassword()">
-                    <i class="fas fa-eye" id="toggleIcon"></i>
-                </span>
-            </div>
+    <form th:action="@{/register}" th:object="${user}" method="post" id="regForm">
+        <label>Full Name</label>
+        <input type="text" th:field="*{name}" class="form-control" required placeholder="Mukesh MK">
+
+        <label>Email Address</label>
+        <input type="email" th:field="*{email}" class="form-control" required placeholder="name@email.com">
+
+        <label>Mobile Number</label>
+        <input type="tel" th:field="*{mobileNumber}" class="form-control" required pattern="[0-9]{10}" placeholder="9876543210">
+
+        <label>Password</label>
+        <div class="input-group mb-4">
+            <input type="password" th:field="*{password}" class="form-control" id="password" required placeholder="••••••••" style="margin-bottom: 0;">
+            <span class="input-group-text" onclick="togglePassword()">
+                <i class="fas fa-eye" id="toggleIcon"></i>
+            </span>
         </div>
 
-        <button type="submit" class="btn btn-register w-100">Complete Registration</button>
+        <button type="submit" class="btn btn-register" id="submitBtn">Complete Registration</button>
     </form>
 
-    <div class="text-center mt-4 text-secondary small">
+    <div class="text-center mt-3 small">
         Already a member? <a th:href="@{/login}" class="text-white fw-bold text-decoration-none">Sign In</a>
     </div>
 </div>
@@ -86,6 +81,13 @@
             toggleIcon.classList.replace("fa-eye-slash", "fa-eye");
         }
     }
+
+    // Form submission animation
+    document.getElementById("regForm").addEventListener("submit", function() {
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+    });
 </script>
 
 </body>

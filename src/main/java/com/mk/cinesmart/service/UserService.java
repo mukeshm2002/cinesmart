@@ -52,13 +52,20 @@ public class UserService {
     }
 
     // 3. CREATE THEATRE ADMIN
+    // UserService.java-வில் மாற்றவும்
     public User createTheatreAdmin(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email already exists!");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.ROLE_THEATRE_ADMIN);
-        return userRepository.save(user);
+
+        try {
+            return userRepository.save(user); // பிழை ஏற்படும் இடம்
+        } catch (Exception e) {
+            e.printStackTrace(); // இதுதான் ரெண்டர் லாக்ஸில் உண்மையான காரணத்தை காட்டும்
+            throw e;
+        }
     }
 
     // 4. FIND USER
