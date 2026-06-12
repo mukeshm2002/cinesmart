@@ -35,14 +35,15 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(body);
 
-            // டிக்கெட் இமேஜை இணைத்தல்
-            FileSystemResource file = new FileSystemResource(new File(filePath));
-            helper.addAttachment("MyTicket.png", file);
+            java.io.File file = new java.io.File(filePath);
+            if(file.exists()) {
+                helper.addAttachment("MyTicket.png", new FileSystemResource(file));
+            }
 
             mailSender.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            // லாக் (Log) செய்யவும்
+        } catch (Exception e) {
+            // மின்னஞ்சல் அனுப்ப முடியவில்லை என்றாலும் புக்கிங் நிக்கக்கூடாது
+            System.err.println("Email sending failed, but booking is saved: " + e.getMessage());
         }
     }
 }

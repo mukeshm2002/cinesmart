@@ -115,23 +115,39 @@ public class UserController {
         User user = userService.findUserByEmail(principal.getName());
         Show show = showService.getShowById(showId);
 
-        // 2. புக்கிங்கை சேமித்தல் (இது Booking object-ஐ ரிட்டர்ன் செய்யும் வகையில் இருக்க வேண்டும்)
-        Booking booking = bookingService.saveNewBooking(user, show, seats, amount, snackIds, quantities);
+        // 2. தியேட்டர் கட்டமைப்பு சரியாக உள்ளதா என சரிபார்த்தல்
+        // ஷோவிலோ அல்லது அதன் ஸ்கிரீனிலோ தியேட்டர் இல்லை என்றால் பிழை காட்டவும்
+        if (show == null || (show.getTheatre() == null && (show.getScreen() == null || show.getScreen().getTheatre() == null))) {
+            return "redirect:/user/home?error=System+Configuration+Error";
+        }
 
-        // 3. டிக்கெட் இமேஜ் உருவாக்குதல் (இதற்கு தனி service/method தேவை)
-        String ticketPath = ticketService.generateTicketImage(booking);
+        try {
+            // 3. புக்கிங்கைச் சேமித்தல்
+            Booking booking = bookingService.saveNewBooking(user, show, seats, amount, snackIds, quantities);
 
-        // 4. மின்னஞ்சல் விவரங்களை தயார் செய்தல்
-        String movieTitle = show.getMovie().getTitle();
-        String subject = "CineSmart - Your Ticket Confirmed!";
-        String body = "Dear " + user.getName() + ",\n\nYour booking for '" + movieTitle +
-                "' is confirmed.\nSeats: " + seats + "\nAmount: ₹" + amount +
-                "\n\nThank you for choosing CineSmart!";
+            // 4. டிக்கெட் இமேஜ் மற்றும் மின்னஞ்சல் (தனி try-catch - புக்கிங் சேவ் ஆன பின் இது நடந்தால் நல்லது)
+            try {
+                String ticketPath = ticketService.generateTicketImage(booking);
 
-        // 5. மின்னஞ்சல் அனுப்புதல்
-        emailService.sendTicketEmail(user.getEmail(), subject, body, ticketPath);
+                String movieTitle = show.getMovie().getTitle();
+                String subject = "CineSmart - Your Ticket Confirmed!";
+                String body = "Dear " + user.getName() + ",\n\nYour booking for '" + movieTitle +
+                        "' is confirmed.\nSeats: " + seats + "\nAmount: ₹" + amount +
+                        "\n\nThank you for choosing CineSmart!";
 
-        return "redirect:/user/history?success=Booked+Successfully";
+                emailService.sendTicketEmail(user.getEmail(), subject, body, ticketPath);
+            } catch (Exception e) {
+                // மின்னஞ்சல் அனுப்ப முடியவில்லை என்றால், அதை மட்டும் லாக் செய்துவிட்டு புக்கிங்கைத் தொடரவும்
+                System.err.println("Note: Booking confirmed, but email/ticket generation failed: " + e.getMessage());
+            }
+
+            return "redirect:/user/history?success=Booked+Successfully";
+
+        } catch (Exception e) {
+            // புக்கிங் சேவ் செய்யும்போது பிழை ஏற்பட்டால்
+            e.printStackTrace();
+            return "redirect:/user/home?error=Booking+Failed+Please+Try+Again";
+        }
     }
 
     // 8. BOOKING HISTORY & MANAGEMENT
