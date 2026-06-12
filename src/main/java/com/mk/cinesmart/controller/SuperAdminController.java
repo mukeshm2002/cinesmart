@@ -127,10 +127,17 @@ public class SuperAdminController {
     }
 
     // 2. தியேட்டர் அட்மினை சேமிக்கும் மெத்தட்
+    // SuperAdminController.java-வில் இதை மாற்றவும்
     @PostMapping("/theatre-admin/save")
-    public String saveTheatreAdmin(@ModelAttribute("user") User user) {
-        // உங்கள் UserService-ல் உள்ள மெத்தட் பெயர் 'createTheatreAdmin' என்பதால் அதையே பயன்படுத்துகிறேன்
-        userService.createTheatreAdmin(user);
-        return "redirect:/super-admin/dashboard?success=Theatre+Admin+Added";
+    public String saveTheatreAdmin(@ModelAttribute("user") User user,
+                                   @RequestParam("theatreName") String theatreName, // இந்த லைன் முக்கியம்
+                                   Model model) {
+        try {
+            userService.createTheatreAdminWithTheatre(user, theatreName);
+            return "redirect:/super-admin/dashboard?success=Theatre+Admin+Added";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error: " + e.getMessage());
+            return "super-admin/add-theatre-admin";
+        }
     }
 }

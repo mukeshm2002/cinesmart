@@ -1,7 +1,9 @@
 package com.mk.cinesmart.service;
 
+import com.mk.cinesmart.model.Theatre;
 import com.mk.cinesmart.model.User;
 import com.mk.cinesmart.model.UserRole;
+import com.mk.cinesmart.repository.TheatreRepository;
 import com.mk.cinesmart.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ public class UserService {
 
     @Autowired private UserRepository userRepository;
     @Autowired private EmailService emailService; // ஏற்கனவே உருவாக்கிய EmailService
+    @Autowired private TheatreRepository  theatreRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -53,19 +56,24 @@ public class UserService {
     }
 
     // 3. CREATE THEATRE ADMIN
-    // UserService.java-வில் மாற்றவும்
-    @Transactional // இதைச் சேர்த்துக் கொள்ளுங்கள்
-    public User createTheatreAdmin(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email already exists!");
-        }
+    // UserService.java-வில் இதைச் சேர்க்கவும்
+    @Transactional
+    public void createTheatreAdminWithTheatre(User user, String theatreName) {
+        // 1. தியேட்டரை உருவாக்கவும்
+        Theatre theatre = Theatre.builder()
+                .name(theatreName)
+                .location("Not Specified") // தற்போதைக்கு டீஃபால்ட் வேல்யூ
+                .adminEmail(user.getEmail()) // தியேட்டர் அட்மின் ஈமெயில்
+                .build();
 
-        // பாஸ்வேர்டு என்க்ரிப்ஷன்
+        theatreRepository.save(theatre); // தியேட்டர் டேபிளில் சேமிக்கப்படும்
+
+        // 2. யூசரை உருவாக்கவும்
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.ROLE_THEATRE_ADMIN);
+        user.setTheatre(theatre); // தியேட்டரை யூசருடன் இணைக்கவும் (Foreign Key Link)
 
-        // இதை செக்யூர் செய்யுங்கள்
-        return userRepository.save(user);
+        userRepository.save(user); // யூசர் டேபிளில் சேமிக்கப்படும்
     }
 
     // 4. FIND USER
