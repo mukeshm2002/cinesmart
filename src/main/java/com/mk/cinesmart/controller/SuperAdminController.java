@@ -2,6 +2,7 @@ package com.mk.cinesmart.controller;
 
 import com.mk.cinesmart.model.Movie;
 import com.mk.cinesmart.model.UpcomingMovie;
+import com.mk.cinesmart.model.User;
 import com.mk.cinesmart.model.UserRole;
 import com.mk.cinesmart.service.MovieService;
 import com.mk.cinesmart.service.UpcomingMovieService;
@@ -110,5 +111,22 @@ public class SuperAdminController {
     public String deleteUpcomingMovie(@PathVariable("id") Long id) {
         upcomingMovieService.deleteMovie(id);
         return "redirect:/super-admin/upcoming/list?deleted=true";
+    }
+
+    // --- THEATRE ADMIN MANAGEMENT ---
+
+    // 1. தியேட்டர் அட்மினை ஆட் செய்யும் ஃபார்ம்
+    @GetMapping("/theatre-admin/add")
+    public String showAddTheatreAdminForm(Model model) {
+        model.addAttribute("user", new User());
+        return "super-admin/add-theatre-admin";
+    }
+
+    // 2. தியேட்டர் அட்மினை சேமிக்கும் மெத்தட்
+    @PostMapping("/theatre-admin/save")
+    public String saveTheatreAdmin(@ModelAttribute("user") User user) {
+        // உங்கள் UserService-ல் உள்ள மெத்தட் பெயர் 'createTheatreAdmin' என்பதால் அதையே பயன்படுத்துகிறேன்
+        userService.createTheatreAdmin(user);
+        return "redirect:/super-admin/dashboard?success=Theatre+Admin+Added";
     }
 }
