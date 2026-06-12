@@ -22,7 +22,11 @@ public class TheatreAdminController {
 
     // தியேட்டர் அட்மினின் தியேட்டரை மட்டும் டேஷ்போர்டில் காட்டுதல்
     private Long getTheatreId(Principal principal) {
-        return userService.findUserByEmail(principal.getName()).getTheatre().getId();
+        User user = userService.findUserByEmail(principal.getName());
+        if (user.getTheatre() == null) {
+            throw new IllegalStateException("Admin is not assigned to any theatre!");
+        }
+        return user.getTheatre().getId();
     }
 
     @GetMapping("/dashboard")
@@ -57,7 +61,9 @@ public class TheatreAdminController {
 
     // --- SHOW CRUD ---
     @PostMapping("/show/save")
-    public String saveShow(@ModelAttribute("show") Show show) {
+    public String saveShow(@ModelAttribute("show") Show show, Principal principal) {
+        // ஷோ உருவாக்கும்போது தியேட்டரை கண்டிப்பாக செட் செய்யவும்
+        show.setTheatre(userService.findUserByEmail(principal.getName()).getTheatre());
         showService.createShow(show);
         return "redirect:/theatre-admin/dashboard?success=Show+Scheduled";
     }
