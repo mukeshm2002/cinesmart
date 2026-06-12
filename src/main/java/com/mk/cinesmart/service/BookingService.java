@@ -70,11 +70,21 @@ public class BookingService {
         return bookingRepository.save(newBooking);
     }
 
-    // 4. SAVE NEW BOOKING (6 Arguments - Controller compatible)
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Booking saveNewBooking(User user, Show show, String seats, Double amount, List<Long> snackIds, List<Integer> quantities) {
         List<String> seatsList = Arrays.asList(seats.split(","));
 
+        // 1. Theatre ID-ஐ பாதுகாப்பாகப் பெறுதல்
+        Long theatreId = null;
+        if (show.getTheatre() != null) {
+            theatreId = show.getTheatre().getId();
+        } else if (show.getScreen() != null && show.getScreen().getTheatre() != null) {
+            theatreId = show.getScreen().getTheatre().getId();
+        } else {
+            throw new RuntimeException("Booking Failed: Theatre information missing for this show.");
+        }
+
+        // 2. Booking உருவாக்கல்
         Booking booking = Booking.builder()
                 .bookingId("CS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .bookingDateTime(LocalDateTime.now())
@@ -83,9 +93,10 @@ public class BookingService {
                 .status(BookingStatus.CONFIRMED)
                 .user(user)
                 .show(show)
-                .theatreId(show.getTheatre().getId())
+                .theatreId(theatreId) // பாதுகாப்பாக பெறப்பட்ட ID
                 .build();
 
+        // 3. Payment உருவாக்கல்
         Payment payment = Payment.builder()
                 .transactionId("TXN-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase())
                 .totalPaidAmount(amount)
@@ -95,10 +106,13 @@ public class BookingService {
 
         booking.setPayment(payment);
 
-        // Update Seats & Snacks Stock
-        show.setAvailableSeats(show.getAvailableSeats() - seatsList.size());
-        showRepository.save(show);
+        // 4. Update Seats (Null check included)
+        if (show.getAvailableSeats() != null) {
+            show.setAvailableSeats(show.getAvailableSeats() - seatsList.size());
+            showRepository.save(show);
+        }
 
+        // 5. Update Snacks Stock
         if (snackIds != null && quantities != null) {
             for (int i = 0; i < snackIds.size(); i++) {
                 Snack snack = snackRepository.findById(snackIds.get(i)).orElseThrow();
@@ -106,9 +120,9 @@ public class BookingService {
                 snackRepository.save(snack);
             }
         }
-        bookingRepository.save(booking);
-        paymentRepository.save(payment);
 
+        // 6. Save data
+        paymentRepository.save(payment);
         return bookingRepository.save(booking);
     }
 
