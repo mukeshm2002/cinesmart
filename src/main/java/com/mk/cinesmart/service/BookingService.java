@@ -132,6 +132,6 @@ public class BookingService {
     }
 
     public List<Booking> getBookingsByUser(Long userId) {
-        return bookingRepository.findByUserIdOrderByBookingDateTimeDesc(userId);
+        return bookingRepository.findByUserIdWithDetails(userId);
     }
 }

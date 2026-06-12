@@ -11,14 +11,10 @@
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
         .ticket-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 25px; margin-bottom: 25px; transition: 0.3s; position: relative; }
         .ticket-card:hover { border-color: #e50914; }
-
-        /* Ticket Cuts */
         .ticket-card::before, .ticket-card::after { content: ''; position: absolute; top: 45%; width: 20px; height: 20px; background: #050505; border-radius: 50%; }
         .ticket-card::before { left: -10px; } .ticket-card::after { right: -10px; }
-
         .badge-status { padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
         .bg-confirmed { background: rgba(85, 230, 158, 0.1); color: #55e69e; border: 1px solid #1a4d2e; }
-
         .btn-action { border-radius: 10px; font-weight: 600; font-size: 0.8rem; padding: 10px 15px; transition: 0.3s; }
         .btn-cancel { background: #222; border: none; color: #fff; }
         .btn-cancel:hover { background: #444; }
@@ -30,29 +26,32 @@
 <div class="container py-5" style="max-width: 850px;">
     <h2 class="fw-bold mb-4">My Bookings</h2>
 
-    <div th:if="${bookings.empty}" class="text-center py-5">
+    <div th:if="${bookings == null or bookings.empty}" class="text-center py-5">
         <div class="display-1 text-secondary mb-3"><i class="fas fa-ticket-alt"></i></div>
         <h5 class="text-secondary">No bookings found!</h5>
         <a th:href="@{/user/home}" class="btn btn-danger mt-3">Book Your First Movie</a>
     </div>
 
-    <div th:each="booking : ${bookings}" class="ticket-card">
+    <div th:each="booking : ${bookings}" class="ticket-card" th:if="${booking != null}">
         <div class="row align-items-center">
             <div class="col-md-8">
                 <div class="d-flex align-items-center mb-2">
-                    <h4 class="fw-bold mb-0 me-3" th:text="${booking.show.movie.title}">Movie Title</h4>
-                    <span class="badge-status" th:classappend="${booking.status.name() == 'CONFIRMED' ? 'bg-confirmed' : 'bg-secondary'}" th:text="${booking.status}"></span>
+                    <h4 class="fw-bold mb-0 me-3" th:text="${booking.show?.movie?.title ?: 'Unknown Movie'}">Movie Title</h4>
+                    <span class="badge-status"
+                          th:classappend="${booking.status != null and booking.status.name() == 'CONFIRMED' ? 'bg-confirmed' : 'bg-secondary'}"
+                          th:text="${booking.status != null ? booking.status : 'N/A'}"></span>
                 </div>
 
                 <p class="text-secondary small mb-3">
-                    <i class="fas fa-calendar-day me-1"></i> <span th:text="${booking.show.showDate}"></span> &nbsp; | &nbsp;
-                    <i class="fas fa-clock me-1"></i> <span th:text="${#temporals.format(booking.show.startTime, 'hh:mm a')}"></span>
+                    <i class="fas fa-calendar-day me-1"></i> <span th:text="${booking.show?.showDate ?: 'N/A'}"></span> &nbsp; | &nbsp;
+                    <i class="fas fa-clock me-1"></i>
+                    <span th:text="${booking.show?.startTime != null ? #temporals.format(booking.show.startTime, 'hh:mm a') : 'N/A'}"></span>
                 </p>
 
                 <div class="d-flex gap-4">
                     <div>
                         <small class="text-muted d-block text-uppercase" style="font-size: 0.6rem;">Seats</small>
-                        <span class="fw-bold" th:text="${booking.selectedSeats}"></span>
+                        <span class="fw-bold" th:text="${booking.selectedSeats != null ? booking.selectedSeats : 'N/A'}"></span>
                     </div>
                     <div th:if="${booking.snackDetails != null}">
                         <small class="text-muted d-block text-uppercase" style="font-size: 0.6rem;">Refreshments</small>
@@ -62,9 +61,9 @@
             </div>
 
             <div class="col-md-4 text-md-end mt-4 mt-md-0">
-                <h3 class="fw-bold mb-3" th:text="'₹' + ${booking.totalAmount}"></h3>
-                <div th:if="${booking.status.name() == 'CONFIRMED'}" class="d-grid gap-2">
-                    <form th:action="@{/user/booking/cancel/{id}(id=${booking.id})}" method="post" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                <h3 class="fw-bold mb-3" th:text="'₹' + ${booking.totalAmount ?: '0'}"></h3>
+                <div th:if="${booking.status != null and booking.status.name() == 'CONFIRMED'}" class="d-grid gap-2">
+                    <form th:action="@{/user/booking/cancel/{id}(id=${booking.id})}" method="post" onsubmit="return confirm('Are you sure you want to cancel?');">
                         <button type="submit" class="btn btn-action btn-cancel w-100">Cancel</button>
                     </form>
                     <form th:action="@{/user/booking/resale/list/{id}(id=${booking.id})}" method="post">

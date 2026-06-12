@@ -153,8 +153,13 @@ public class UserController {
     // 8. BOOKING HISTORY & MANAGEMENT
     @GetMapping("/history")
     public String showBookingHistory(Model model, Principal principal) {
+        if (principal == null) return "redirect:/login";
+
         User user = userService.findUserByEmail(principal.getName());
-        model.addAttribute("bookings", bookingService.getBookingsByUser(user.getId()));
+        if (user != null) {
+            List<Booking> bookings = bookingService.getBookingsByUser(user.getId());
+            model.addAttribute("bookings", bookings);
+        }
         return "user/history";
     }
 
