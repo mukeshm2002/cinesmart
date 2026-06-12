@@ -58,8 +58,6 @@ public class ShowService {
 
     public Integer getTotalTicketsSoldByTheatre(Long theatreId) {
         Long totalSold = showRepository.findTotalTicketsSoldByTheatre(theatreId);
-
-        // totalSold null ஆக இருந்தால் 0 என எடுத்துக்கொள்ளும், இல்லையெனில் Long-ஐ Integer ஆக மாற்றும்
         return (totalSold != null) ? totalSold.intValue() : 0;
     }
 }

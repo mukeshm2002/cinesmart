@@ -19,6 +19,6 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
     @Query("SELECT s FROM Show s WHERE s.movie.id = :movieId AND s.showDate >= :currentDate ORDER BY s.showDate ASC, s.startTime ASC")
     List<Show> findUpcomingShowsByMovie(@Param("movieId") Long movieId, @Param("currentDate") LocalDate currentDate);
 
-    @Query("SELECT SUM(s.screen.capacity - s.availableSeats) FROM Show s WHERE s.theatre.id = :theatreId")
+    @Query("SELECT SUM(s.screen.totalSeats - s.availableSeats) FROM Show s WHERE s.theatre.id = :theatreId")
     Long findTotalTicketsSoldByTheatre(@Param("theatreId") Long theatreId);
 }
