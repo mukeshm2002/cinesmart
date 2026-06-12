@@ -23,6 +23,7 @@ public class UserController {
     @Autowired private FeedbackService feedbackService;
     @Autowired private EmailService emailService;
     @Autowired private TicketService ticketService;
+    @Autowired private UpcomingMovieService upcomingMovieService;
 
     // 1. HOME PAGE
     @GetMapping("/home")
@@ -53,6 +54,12 @@ public class UserController {
         feedback.setMovie(movieService.getMovieById(movieId));
         feedbackService.saveFeedback(feedback);
         return "redirect:/user/movie/" + movieId + "?success=Feedback+Submitted";
+    }
+
+    @GetMapping("/upcoming")
+    public String showUpcomingMovies(Model model) {
+        model.addAttribute("upcomingMovies", upcomingMovieService.getAllUpcomingMovies());
+        return "user/upcoming"; // இது உங்கள் user/upcoming.html கோப்பை காட்டும்
     }
 
     // 4. SEAT SELECTION
