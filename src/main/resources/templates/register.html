@@ -59,13 +59,12 @@
     <div th:if="${param.step != null and param.step[0] == 'otp'}">
         <div class="text-center mb-4">
             <h4 class="fw-bold">Verify Email</h4>
-            <p class="text-secondary small">OTP sent to <span th:text="${param.email}"></span></p>
+            <p class="text-secondary small">Enter the 6-digit OTP sent to your email.</p>
         </div>
 
-        <div th:if="${param.error}" class="alert alert-danger p-2 text-center small">Invalid or Expired OTP!</div>
+        <div th:if="${error}" class="alert alert-danger p-2 text-center small" th:text="${error}"></div>
 
         <form th:action="@{/verify-otp}" method="post" id="otpForm">
-            <input type="hidden" name="email" th:value="${param.email}">
             <label>Enter 6-digit OTP</label>
             <input type="number" name="otp" class="form-control" required placeholder="000000" autofocus autocomplete="off">
             <button type="submit" class="btn btn-register" id="otpBtn">Verify & Complete</button>
@@ -78,7 +77,6 @@
 </div>
 
 <script>
-    // Button Loading States
     document.getElementById("regForm")?.addEventListener("submit", function() {
         const btn = document.getElementById("submitBtn");
         btn.disabled = true;

@@ -23,25 +23,30 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public boolean emailExists(String email) {
-        return userRepository.existsByEmail(email);
+        return email != null && userRepository.existsByEmail(email.toLowerCase());
     }
 
-    // 1. தற்காலிகமாக செஷனில் வைத்து, OTP அனுப்புதல் (டேட்டாபேஸில் சேமிக்கப்படாது)
     public String prepareTempRegistration(User user, HttpSession session) {
+        String normalizedEmail = user.getEmail().toLowerCase();
+        user.setEmail(normalizedEmail);
+
+        // ஏற்கனவே செஷனில் யூசர் இருந்தால், அதை லாக் செய்துவிடலாம் (Security)
+        session.invalidate();
+        HttpSession newSession = session; // புதிய செஷன் உருவாக்கி தொடரவும்
+
         String otp = String.format("%06d", new Random().nextInt(1000000));
 
-        // கடவுச்சொல்லை என்க்ரிப்ட் செய்து செஷனில் சேமிப்போம்
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.ROLE_USER);
         user.setVerified(false);
 
-        // செஷனில் யூசர் மற்றும் OTP-ஐ தற்காலிகமாக ஒதுக்குதல்
-        session.setAttribute("tempUser", user);
-        session.setAttribute("tempOtp", otp);
-        session.setAttribute("tempEmail", user.getEmail());
+        newSession.setMaxInactiveInterval(5 * 60);
+        newSession.setAttribute("tempUser", user);
+        newSession.setAttribute("tempOtp", otp);
+        newSession.setAttribute("tempEmail", normalizedEmail);
 
         try {
-            emailService.sendWelcomeEmail(user.getEmail(), otp);
+            emailService.sendWelcomeEmail(normalizedEmail, otp);
         } catch (Exception e) {
             System.err.println("!!! மின்னஞ்சல் அனுப்ப முடியவில்லை: " + e.getMessage());
         }
@@ -49,56 +54,51 @@ public class UserService {
         return otp;
     }
 
-    // 2. OTP சரிபார்த்து, சரியாக இருந்தால் மட்டும் டேட்டாபேஸில் சேமித்தல்
     public boolean verifyOtpAndSaveUser(String email, String inputOtp, HttpSession session) {
         String sessionEmail = (String) session.getAttribute("tempEmail");
         String sessionOtp = (String) session.getAttribute("tempOtp");
         User tempUser = (User) session.getAttribute("tempUser");
 
-        if (sessionEmail != null && sessionEmail.equals(email) &&
-                sessionOtp != null && sessionOtp.equals(inputOtp) && tempUser != null) {
+        // Null Check மற்றும் மின்னஞ்சல் சரிபார்ப்பு
+        if (sessionEmail == null || !sessionEmail.equals(email.toLowerCase())) {
+            return false; // மின்னஞ்சல் மாறுகிறது
+        }
 
-            // யூசரை முழுமையாக வெரிஃபை செய்து டேட்டாபேஸில் சேமிக்கிறோம்
+        if (sessionOtp != null && sessionOtp.equals(inputOtp) && tempUser != null) {
             tempUser.setVerified(true);
-            userRepository.save(tempUser); // உண்மையான UserRepository save
-
-            // செஷனில் உள்ள தற்காலிகத் தரவுகளை நீக்கிவிடுதல்
-            session.removeAttribute("tempUser");
-            session.removeAttribute("tempOtp");
-            session.removeAttribute("tempEmail");
-
+            userRepository.save(tempUser);
+            session.invalidate();
             return true;
         }
-        return false;
+        return false; // OTP தவறு
     }
 
     @Transactional
     public void createTheatreAdminWithTheatre(User user, String theatreName) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email already exists!");
+        String email = user.getEmail().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது!");
         }
 
         Theatre theatre = Theatre.builder()
                 .name(theatreName)
                 .location("Not Specified")
-                .adminEmail(user.getEmail())
+                .adminEmail(email)
                 .build();
 
         theatreRepository.save(theatre);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setEmail(email);
         user.setRole(UserRole.ROLE_THEATRE_ADMIN);
         user.setTheatre(theatre);
+        user.setVerified(true);
 
         userRepository.save(user);
     }
 
     public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    public List<User> getUsersByRole(UserRole role) {
-        return userRepository.findByRole(role);
+        return userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("பயனர் காணப்படவில்லை!"));
     }
 }

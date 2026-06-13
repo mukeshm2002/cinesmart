@@ -6,10 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class MainController {
@@ -18,55 +16,57 @@ public class MainController {
     private UserService userService;
 
     @GetMapping("/login")
-    public String loginPage() {
+    public String loginPage(@RequestParam(value = "verified", required = false) boolean verified, Model model) {
+        if (verified) {
+            model.addAttribute("message", "பதிவு வெற்றி! இப்போது லாகின் செய்யவும்.");
+        }
         return "login";
     }
 
     @GetMapping("/register")
     public String registerPage(@RequestParam(value = "step", required = false) String step,
-                               @RequestParam(value = "email", required = false) String email,
-                               @RequestParam(value = "error", required = false) String error,
                                Model model) {
         if ("otp".equals(step)) {
-            model.addAttribute("email", email);
-            if (error != null) {
-                model.addAttribute("error", "Invalid OTP! Try again.");
-            }
-        } else {
+            return "register-otp"; // தனி HTML பக்கம் இருப்பது சிறந்தது
+        }
+        if (!model.containsAttribute("user")) {
             model.addAttribute("user", new User());
         }
         return "register";
     }
 
     @PostMapping("/register")
-    public String processRegister(@ModelAttribute("user") User user, HttpSession session, Model model) {
+    public String processRegister(@ModelAttribute("user") User user,
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
         try {
-            // இமெயில் ஏற்கனவே உள்ளதா என சரிபார்க்கவும்
             if (userService.emailExists(user.getEmail())) {
-                model.addAttribute("error", "Email ID already registered!");
-                return "register";
+                redirectAttributes.addFlashAttribute("error", "இந்த மின்னஞ்சல் ஏற்கனவே உள்ளது!");
+                return "redirect:/register";
             }
 
-            // சர்வீஸ் மூலம் தற்காலிக பதிவு மற்றும் OTP அனுப்புதலை மேற்கொள்ளவும்
-            String otp = userService.prepareTempRegistration(user, session);
-
-            return "redirect:/register?step=otp&email=" + user.getEmail();
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
-            return "register";
+            userService.prepareTempRegistration(user, session);
+            // URL-ல் மின்னஞ்சலை அனுப்பாமல் செஷன் மூலம் கையாளுகிறோம்
+            return "redirect:/register?step=otp";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "பதிவு செய்வதில் சிக்கல்: " + e.getMessage());
+            return "redirect:/register";
         }
     }
 
     @PostMapping("/verify-otp")
-    public String processOtp(@RequestParam("email") String email,
-                             @RequestParam("otp") String otp,
+    public String processOtp(@RequestParam("otp") String otp,
                              HttpSession session,
-                             Model model) {
-        // OTP சரியாக இருந்தால் மட்டுமே டேட்டாபேஸில் சேமிக்கப்படும்
-        if (userService.verifyOtpAndSaveUser(email, otp, session)) {
+                             RedirectAttributes redirectAttributes) {
+
+        // செஷனில் இருந்து மின்னஞ்சலை எடுக்கிறோம் (URL-ல் அனுப்பத் தேவையில்லை)
+        String email = (String) session.getAttribute("tempEmail");
+
+        if (email != null && userService.verifyOtpAndSaveUser(email, otp, session)) {
             return "redirect:/login?verified=true";
         } else {
-            return "redirect:/register?step=otp&email=" + email + "&error=true";
+            redirectAttributes.addFlashAttribute("error", "தவறான OTP! மீண்டும் முயலவும்.");
+            return "redirect:/register?step=otp";
         }
     }
 }
