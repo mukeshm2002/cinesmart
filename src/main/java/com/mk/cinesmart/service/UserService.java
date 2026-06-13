@@ -101,4 +101,9 @@ public class UserService {
         return userRepository.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("பயனர் காணப்படவில்லை!"));
     }
+
+    // இந்த மெத்தட் தான் உங்கள் கன்ட்ரோலரில் missing ஆக இருக்கிறது
+    public List<User> getUsersByRole(UserRole role) {
+        return userRepository.findByRole(role);
+    }
 }
