@@ -49,4 +49,10 @@ public class Movie {
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Show> shows;
+
+    @ElementCollection
+    private List<String> actorNames;
+
+    @ElementCollection
+    private List<String> actorImages; // கிளவுடினரி (Cloudinary) லிங்க்ஸ்
 }

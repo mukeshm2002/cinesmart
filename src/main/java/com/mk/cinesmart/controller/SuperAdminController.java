@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 @RequestMapping("/super-admin")
@@ -45,12 +46,15 @@ public class SuperAdminController {
     @PostMapping("/movie/save")
     public String saveMovie(@ModelAttribute("movie") Movie movie,
                             @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
+                            @RequestParam(value = "actorNames", required = false) List<String> actorNames,
+                            @RequestParam(value = "actorFiles", required = false) List<MultipartFile> actorFiles,
                             Model model) {
         try {
-            movieService.saveMovie(movie, posterFile);
+            // இப்போது actorNames மற்றும் actorFiles-ஐயும் அனுப்புகிறோம்
+            movieService.saveMovie(movie, posterFile, actorNames, actorFiles);
             return "redirect:/super-admin/dashboard?success=Movie+Saved+Successfully";
         } catch (IOException e) {
-            model.addAttribute("error", "Image upload failed: " + e.getMessage());
+            model.addAttribute("error", "Error saving movie: " + e.getMessage());
             return "super-admin/add-movie";
         }
     }
