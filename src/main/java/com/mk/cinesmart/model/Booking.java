@@ -57,4 +57,12 @@ public class Booking {
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Payment payment;
+
+    @ManyToMany
+    @JoinTable(
+            name = "booking_snacks",
+            joinColumns = @JoinColumn(name = "booking_id"),
+            inverseJoinColumns = @JoinColumn(name = "snack_id")
+    )
+    private List<Snack> snacks;
 }

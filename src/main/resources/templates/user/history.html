@@ -51,11 +51,13 @@
                 <div class="d-flex gap-4">
                     <div>
                         <small class="text-muted d-block text-uppercase" style="font-size: 0.6rem;">Seats</small>
-                        <span class="fw-bold" th:text="${booking.selectedSeats != null ? booking.selectedSeats : 'N/A'}"></span>
+                        <span class="fw-bold" th:text="${booking.selectedSeats != null ? #strings.listJoin(booking.selectedSeats, ', ') : 'N/A'}"></span>
                     </div>
-                    <div th:if="${booking.snackDetails != null}">
+                    <div th:if="${booking.snacks != null and !booking.snacks.empty}">
                         <small class="text-muted d-block text-uppercase" style="font-size: 0.6rem;">Refreshments</small>
-                        <span class="fw-bold text-warning small" th:text="${booking.snackDetails}"></span>
+                        <span class="fw-bold text-warning small" th:each="snack, iterStat : ${booking.snacks}">
+                            <span th:text="${snack.itemName}"></span><span th:if="${!iterStat.last}">, </span>
+                        </span>
                     </div>
                 </div>
             </div>
