@@ -16,16 +16,20 @@ public class MainController {
     @Autowired
     private UserService userService;
 
-    // 1. CUSTOM LOGIN PAGE
     @GetMapping("/login")
     public String loginPage() {
-        return "login"; // templates/login.html-ஐ காட்டும்
+        return "login";
     }
 
-    // 2. REGISTRATION PAGE
     @GetMapping("/register")
-    public String registerPage(Model model) {
-        model.addAttribute("user", new User());
+    public String registerPage(@RequestParam(value = "step", required = false) String step,
+                               @RequestParam(value = "email", required = false) String email,
+                               Model model) {
+        if ("otp".equals(step)) {
+            model.addAttribute("email", email);
+        } else {
+            model.addAttribute("user", new User());
+        }
         return "register"; // templates/register.html-ஐ காட்டும்
     }
 
@@ -33,23 +37,13 @@ public class MainController {
     public String processRegister(@ModelAttribute("user") User user, Model model) {
         try {
             userService.registerUser(user);
-            // லாகினுக்கு அனுப்பாமல், OTP சரிபார்க்கும் பக்கத்திற்கு அனுப்புகிறோம்
-            return "redirect:/verify-otp?email=" + user.getEmail();
+            return "redirect:/register?step=otp&email=" + user.getEmail();
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("user", user);
             return "register";
         }
     }
 
-    // 4. OTP வெரிஃபிகேஷன் பக்கம் காட்டுதல்
-    @GetMapping("/verify-otp")
-    public String showOtpPage(@RequestParam("email") String email, Model model) {
-        model.addAttribute("email", email);
-        return "verify-otp"; // templates/verify-otp.html தேவை
-    }
-
-    // 5. OTP சரிபார்த்தல்
     @PostMapping("/verify-otp")
     public String processOtp(@RequestParam("email") String email,
                              @RequestParam("otp") String otp,
@@ -57,9 +51,8 @@ public class MainController {
         if (userService.verifyOtp(email, otp)) {
             return "redirect:/login?verified=true";
         } else {
-            model.addAttribute("error", "தவறான OTP! மீண்டும் முயற்சிக்கவும்.");
-            model.addAttribute("email", email);
-            return "verify-otp";
+            // பிழை இருந்தால் மீண்டும் அதே OTP பக்கத்திற்கே அனுப்பவும்
+            return "redirect:/register?step=otp&email=" + email + "&error=InvalidOTP";
         }
     }
 }
