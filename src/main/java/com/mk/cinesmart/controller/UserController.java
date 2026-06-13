@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -38,8 +40,14 @@ public class UserController {
         Movie movie = movieService.getMovieById(id);
         if (movie == null) return "redirect:/user/home?error=Movie+Not+Found";
 
+        List<Show> shows = showService.getUpcomingShowsForMovie(id);
+
+        // தியேட்டர் பெயரின் அடிப்படையில் ஷோக்களை குரூப் செய்தல்
+        Map<String, List<Show>> showsByTheatre = shows.stream()
+                .collect(Collectors.groupingBy(show -> show.getScreen().getTheatre().getName()));
+
         model.addAttribute("movie", movie);
-        model.addAttribute("shows", showService.getUpcomingShowsForMovie(id));
+        model.addAttribute("showsByTheatre", showsByTheatre); // குரூப் செய்த லிஸ்ட்டை அனுப்புகிறோம்
         model.addAttribute("feedbacks", feedbackService.getFeedbackByMovie(id));
         return "user/movie-details";
     }
