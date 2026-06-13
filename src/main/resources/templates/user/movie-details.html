@@ -73,13 +73,13 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <div th:with="theatreGroups=${#lists.groupBy(shows, 'screen.theatre.name')}">
+                <div th:if="${not #maps.isEmpty(showsByTheatre)}">
 
-                    <div th:each="theatreEntry : ${theatreGroups}">
-                        <h5 class="text-danger fw-bold mt-3 mb-2" th:text="${theatreEntry.key}">Theatre Name</h5>
+                    <div th:each="entry : ${showsByTheatre}">
+                        <h5 class="text-danger fw-bold mt-3 mb-2" th:text="${entry.key}">Theatre Name</h5>
 
                         <div class="d-flex flex-wrap gap-3">
-                            <div th:each="show : ${theatreEntry.value}">
+                            <div th:each="show : ${entry.value}">
                                 <a th:href="@{/user/show/{showId}/seats(showId=${show.id})}" class="showtime-card text-center">
                                     <small class="text-white-50 d-block fw-bold" th:text="'Screen ' + ${show.screen.screenName}"></small>
                                     <hr class="border-secondary my-2">
@@ -91,9 +91,10 @@
                         </div>
                         <hr class="border-secondary">
                     </div>
-
-                    <div th:if="${#lists.isEmpty(shows)}" class="text-center text-muted py-4">No shows available.</div>
                 </div>
+
+                <div th:if="${#maps.isEmpty(showsByTheatre)}" class="text-center text-muted py-4">No shows available.</div>
+            </div>
             </div>
         </div>
     </div>

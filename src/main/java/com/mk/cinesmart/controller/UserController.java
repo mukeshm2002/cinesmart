@@ -35,6 +35,7 @@ public class UserController {
     }
 
     // 2. MOVIE DETAILS
+    // 2. MOVIE DETAILS
     @GetMapping("/movie/{id}")
     public String showMovieDetails(@PathVariable("id") Long id, Model model) {
         Movie movie = movieService.getMovieById(id);
@@ -42,12 +43,13 @@ public class UserController {
 
         List<Show> shows = showService.getUpcomingShowsForMovie(id);
 
-        // தியேட்டர் பெயரின் அடிப்படையில் ஷோக்களை குரூப் செய்தல்
+        // தியேட்டர் பெயரின் அடிப்படையில் ஷோக்களை பாதுகாப்பாக குரூப் செய்தல்
         Map<String, List<Show>> showsByTheatre = shows.stream()
+                .filter(show -> show.getScreen() != null && show.getScreen().getTheatre() != null)
                 .collect(Collectors.groupingBy(show -> show.getScreen().getTheatre().getName()));
 
         model.addAttribute("movie", movie);
-        model.addAttribute("showsByTheatre", showsByTheatre); // குரூப் செய்த லிஸ்ட்டை அனுப்புகிறோம்
+        model.addAttribute("showsByTheatre", showsByTheatre);
         model.addAttribute("feedbacks", feedbackService.getFeedbackByMovie(id));
         return "user/movie-details";
     }
