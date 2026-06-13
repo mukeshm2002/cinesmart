@@ -20,21 +20,23 @@ public class TheatreAdminController {
     @Autowired private PaymentService paymentService;
     @Autowired private UserService userService;
 
-    // TheatreAdminController.java
     private Long getTheatreId(Principal principal) {
-        if (principal == null) {
-            throw new IllegalStateException("நீங்கள் லாகின் செய்யவில்லை!");
-        }
+        if (principal == null) throw new IllegalStateException("நீங்கள் லாகின் செய்யவில்லை!");
 
         User user = userService.findUserByEmail(principal.getName());
 
         if (user == null) {
-            throw new IllegalStateException("அட்மின் பயனர் டேட்டாபேஸில் இல்லை!");
+            throw new IllegalStateException("பயனர் டேட்டாபேஸில் இல்லை!");
         }
 
+        // தியேட்டர் இருக்கிறதா என சரிபார்க்கவும்
         if (user.getTheatre() == null) {
-            throw new IllegalStateException("இந்த அட்மினுக்கு எந்த தியேட்டரும் ஒதுக்கப்படவில்லை!");
+            // ஒருவேளை தியேட்டர் ஐடி மட்டும் டேபிளில் இருந்து, ஆப்ஜெக்ட் வராவிட்டால்
+            // இங்கே பிழை கிடைக்கும்.
+            System.err.println("Debug: User " + user.getEmail() + " has NO Theatre object!");
+            throw new IllegalStateException("அட்மினுக்கு தியேட்டர் இணைக்கப்படவில்லை!");
         }
+
         return user.getTheatre().getId();
     }
 
