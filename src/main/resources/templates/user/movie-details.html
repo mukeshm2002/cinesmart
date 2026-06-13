@@ -12,19 +12,10 @@
         body { background-color: #050505; color: #fff; font-family: 'Montserrat', sans-serif; }
         .poster-img { border-radius: 20px; transition: 0.5s; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 100%; }
         .synopsis-box { background: rgba(255,255,255,0.03); padding: 25px; border-radius: 20px; border-left: 4px solid #e50914; }
-
-        /* Cast Style */
         .cast-img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #333; }
-
-        /* Button Style */
         .btn-netflix { background: #e50914; color: white; border-radius: 12px; font-weight: 700; padding: 15px 30px; border: none; transition: 0.3s; }
         .btn-netflix:hover { background: #ff0a16; transform: scale(1.02); }
-
-        /* Modal Styles */
-        .showtime-card {
-            background: #111; border: 1px solid #222; border-radius: 15px; padding: 15px; width: 180px;
-            transition: 0.4s; text-decoration: none; color: white; display: block;
-        }
+        .showtime-card { background: #111; border: 1px solid #222; border-radius: 15px; padding: 15px; width: 180px; transition: 0.4s; text-decoration: none; color: white; display: block; }
         .showtime-card:hover { border-color: #e50914; transform: translateY(-5px); background: #000; }
         .badge-price { color: #ffc107; font-weight: 700; font-size: 0.9rem; margin-top: 5px;}
         .theatre-name { color: #e50914; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
@@ -54,7 +45,7 @@
                 <h5 class="fw-bold mb-3">Cast</h5>
                 <div class="d-flex gap-3 overflow-auto pb-2">
                     <div th:each="i : ${#numbers.sequence(0, movie.actorNames.size() - 1)}" class="text-center">
-                        <img th:src="${movie.actorImages[i]}" class="cast-img" alt="Actor">
+                        <img th:if="${movie.actorImages.size() > i}" th:src="${movie.actorImages[i]}" class="cast-img" alt="Actor">
                         <p class="small mt-2 mb-0" th:text="${movie.actorNames[i]}"></p>
                     </div>
                 </div>
@@ -85,8 +76,8 @@
                 <div class="d-flex flex-wrap gap-3" th:if="${not #lists.isEmpty(shows)}">
                     <div th:each="show : ${shows}" th:if="${show != null and show.screen != null}">
                         <a th:href="@{/user/show/{showId}/seats(showId=${show.id})}" class="showtime-card text-center">
-                            <div class="theatre-name" th:text="${show.screen.theatre.name}">Theatre</div>
-                            <small class="text-white-50 d-block" th:text="'Screen ' + ${show.screen.screenNumber}"></small>
+                            <div class="theatre-name" th:text="${show.screen.theatre != null ? show.screen.theatre.name : 'Unknown'}">Theatre</div>
+                            <small class="text-white-50 d-block" th:text="'Screen ' + ${show.screen.screenName}"></small>
                             <hr class="border-secondary my-2">
                             <small class="text-secondary" th:text="${#temporals.format(show.showDate, 'dd MMM')}"></small>
                             <h5 class="fw-bold my-1" th:text="${#temporals.format(show.startTime, 'hh:mm a')}"></h5>

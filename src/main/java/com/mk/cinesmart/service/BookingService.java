@@ -134,4 +134,12 @@ public class BookingService {
     public List<Booking> getBookingsByUser(Long userId) {
         return bookingRepository.findByUserIdWithDetails(userId);
     }
+
+    // BookingService.java-வில் இந்த மெத்தடைச் சேர்க்கவும்:
+
+    @Transactional(readOnly = true)
+    public Booking getBookingById(Long bookingId) {
+        return bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
+    }
 }
