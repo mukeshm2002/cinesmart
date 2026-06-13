@@ -31,21 +31,20 @@ public class UserService {
         String normalizedEmail = user.getEmail().toLowerCase();
         user.setEmail(normalizedEmail);
 
-        // செஷனைinvalidate செய்வதற்கு முன் அது செல்லுபடியாக உள்ளதா என சரிபார்க்கவும்
-        try {
-            session.invalidate();
-        } catch (IllegalStateException e) {
-            // செஷன் ஏற்கனவே காலாவதியாகி இருந்தால் அதை ஒன்றும் செய்ய வேண்டாம்
-        }
+        // session.invalidate();  <-- இதை நீக்கிவிடுங்கள் (இதுதான் பிரச்சனை)
 
-        // புதிய செஷன் உருவாக்கத் தேவையில்லை, அதே HttpSession ஆப்ஜெக்ட்டை அப்படியே பயன்படுத்தலாம்
+        // செஷனில் இருக்கும் பழைய தரவுகளை நீக்கிவிட்டு புதியவற்றைச் சேர்க்கவும்
+        session.removeAttribute("tempUser");
+        session.removeAttribute("tempOtp");
+        session.removeAttribute("tempEmail");
+
         String otp = String.format("%06d", new Random().nextInt(1000000));
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.ROLE_USER);
         user.setVerified(false);
 
-        session.setMaxInactiveInterval(5 * 60);
+        session.setMaxInactiveInterval(5 * 60); // 5 நிமிடம்
         session.setAttribute("tempUser", user);
         session.setAttribute("tempOtp", otp);
         session.setAttribute("tempEmail", normalizedEmail);
