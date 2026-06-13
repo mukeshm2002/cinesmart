@@ -101,9 +101,11 @@ public class UserService {
         userRepository.save(user);
     }
 
+    // UserService.java-வில் findUserByEmail-ஐ இப்படி மாற்றவும்
     public User findUserByEmail(String email) {
+        if (email == null) return null;
         return userRepository.findByEmail(email.toLowerCase())
-                .orElseThrow(() -> new RuntimeException("பயனர் காணப்படவில்லை!"));
+                .orElse(null); // .orElseThrow-க்கு பதிலாக null அனுப்பவும்
     }
 
     // இந்த மெத்தட் தான் உங்கள் கன்ட்ரோலரில் missing ஆக இருக்கிறது

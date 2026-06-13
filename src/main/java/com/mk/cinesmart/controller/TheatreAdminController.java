@@ -20,11 +20,20 @@ public class TheatreAdminController {
     @Autowired private PaymentService paymentService;
     @Autowired private UserService userService;
 
-    // தியேட்டர் அட்மினின் தியேட்டரை மட்டும் டேஷ்போர்டில் காட்டுதல்
+    // TheatreAdminController.java
     private Long getTheatreId(Principal principal) {
+        if (principal == null) {
+            throw new IllegalStateException("நீங்கள் லாகின் செய்யவில்லை!");
+        }
+
         User user = userService.findUserByEmail(principal.getName());
+
+        if (user == null) {
+            throw new IllegalStateException("அட்மின் பயனர் டேட்டாபேஸில் இல்லை!");
+        }
+
         if (user.getTheatre() == null) {
-            throw new IllegalStateException("Admin is not assigned to any theatre!");
+            throw new IllegalStateException("இந்த அட்மினுக்கு எந்த தியேட்டரும் ஒதுக்கப்படவில்லை!");
         }
         return user.getTheatre().getId();
     }
