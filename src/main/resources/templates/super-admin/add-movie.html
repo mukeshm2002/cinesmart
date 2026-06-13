@@ -25,7 +25,7 @@
 
             <div class="mb-4">
                 <label>Movie Title</label>
-                <input type="text" th:field="*{title}" class="form-control" required>
+                <input type="text" th:field="*{title}" class="form-control" required placeholder="Ex: Interstellar">
             </div>
 
             <div class="row">
@@ -37,6 +37,30 @@
                     <label>Language</label>
                     <input type="text" th:field="*{language}" class="form-control" required>
                 </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label>Status</label>
+                    <select th:field="*{status}" class="form-select" required>
+                        <option value="RELEASED">Released</option>
+                        <option value="UPCOMING">Upcoming</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label>Release Date</label>
+                    <input type="date" th:field="*{releaseDate}" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label>Duration (Minutes)</label>
+                <input type="number" th:field="*{durationInMinutes}" class="form-control" required placeholder="Ex: 169">
+            </div>
+
+            <div class="mb-4">
+                <label>Synopsis</label>
+                <textarea th:field="*{description}" class="form-control" rows="3" required></textarea>
             </div>
 
             <div class="mb-4">
@@ -76,6 +100,5 @@
         container.appendChild(div);
     }
 </script>
-
 </body>
 </html>
