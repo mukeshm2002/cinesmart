@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Add/Edit Movie</title>
+    <title th:text="${movie.id != null ? 'Edit Movie' : 'Add Movie'}">Admin | Movie</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -19,9 +19,11 @@
 
 <div class="container py-5" style="max-width: 700px;">
     <div class="card form-card">
-        <h3 class="fw-bold mb-4">🎬 Publish New Movie</h3>
+        <h3 class="fw-bold mb-4" th:text="${movie.id != null ? '🎬 Edit Movie' : '🎬 Publish New Movie'}"></h3>
+
         <form th:action="@{/super-admin/movie/save}" th:object="${movie}" method="post" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />
+            <input type="hidden" th:field="*{posterUrl}" />
 
             <div class="mb-4">
                 <label>Movie Title</label>
@@ -55,7 +57,7 @@
 
             <div class="mb-4">
                 <label>Duration (Minutes)</label>
-                <input type="number" th:field="*{durationInMinutes}" class="form-control" required placeholder="Ex: 169">
+                <input type="number" th:field="*{durationInMinutes}" class="form-control" required>
             </div>
 
             <div class="mb-4">
@@ -63,19 +65,9 @@
                 <textarea th:field="*{description}" class="form-control" rows="3" required></textarea>
             </div>
 
-            <div class="mb-4">
-                <label>Cast Details</label>
-                <div id="actorsContainer">
-                    <div class="row actor-row mb-2">
-                        <div class="col-md-6">
-                            <input type="text" name="actorNames" class="form-control" placeholder="Actor Name">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="file" name="actorFiles" class="form-control" accept="image/*">
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-light mt-2" onclick="addActor()">+ Add Actor</button>
+            <div class="mb-4" th:if="${movie.posterUrl != null && !movie.posterUrl.isEmpty()}">
+                <label>Current Poster</label><br>
+                <img th:src="${movie.posterUrl}" width="120" class="rounded mb-2">
             </div>
 
             <div class="mb-4">
@@ -83,7 +75,18 @@
                 <input type="file" name="posterFile" class="form-control" accept="image/*">
             </div>
 
-            <button type="submit" class="btn btn-publish w-100">Publish Movie</button>
+            <div class="mb-4">
+                <label>Cast Details</label>
+                <div id="actorsContainer">
+                    <div class="row actor-row mb-2">
+                        <div class="col-md-6"><input type="text" name="actorNames" class="form-control" placeholder="Actor Name"></div>
+                        <div class="col-md-6"><input type="file" name="actorFiles" class="form-control" accept="image/*"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-light mt-2" onclick="addActor()">+ Add Actor</button>
+            </div>
+
+            <button type="submit" class="btn btn-publish w-100" th:text="${movie.id != null ? 'Update Movie' : 'Publish Movie'}"></button>
         </form>
     </div>
 </div>

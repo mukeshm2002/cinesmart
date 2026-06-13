@@ -43,7 +43,11 @@
                         <td><img th:src="${movie.posterUrl}" width="50" class="rounded"></td>
                         <td th:text="${movie.title}"></td>
                         <td th:text="${movie.genre}"></td>
-                        <td class="text-end"><a th:href="@{/super-admin/movie/delete/{id}(id=${movie.id})}" class="btn btn-delete" onclick="return confirm('Delete?')">Remove</a></td>
+                        <td class="text-end">
+                            <a th:href="@{/super-admin/movie/edit/{id}(id=${movie.id})}" class="btn btn-sm btn-outline-light me-2">Edit</a>
+
+                            <a th:href="@{/super-admin/movie/delete/{id}(id=${movie.id})}" class="btn btn-delete" onclick="return confirm('Delete?')">Remove</a>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

@@ -18,32 +18,49 @@ public class MovieService {
     @Autowired
     private ImageService imageService;
 
-    // ADD NEW MOVIE with Actor Details
     public Movie saveMovie(Movie movie,
                            MultipartFile posterFile,
                            List<String> actorNames,
                            List<MultipartFile> actorFiles) throws IOException {
 
-        // 1. Poster upload
+        // 1. இது அப்டேட்டா அல்லது புதிய மூவியா என்று பார்க்க ID-ஐச் சரிபார்க்கவும்
+        Movie targetMovie = movie;
+        if (movie.getId() != null) {
+            targetMovie = movieRepository.findById(movie.getId())
+                    .orElseThrow(() -> new RuntimeException("Movie not found"));
+
+            // புதிய மதிப்புகளை அப்டேட் செய்கிறோம்
+            targetMovie.setTitle(movie.getTitle());
+            targetMovie.setGenre(movie.getGenre());
+            targetMovie.setLanguage(movie.getLanguage());
+            targetMovie.setStatus(movie.getStatus());
+            targetMovie.setReleaseDate(movie.getReleaseDate());
+            targetMovie.setDurationInMinutes(movie.getDurationInMinutes());
+            targetMovie.setDescription(movie.getDescription());
+        }
+
+        // 2. Poster upload (புதியது வந்தால் மட்டும் மாற்றவும்)
         if (posterFile != null && !posterFile.isEmpty()) {
-            movie.setPosterUrl(imageService.uploadImage(posterFile));
-        } else if (movie.getPosterUrl() == null) {
-            movie.setPosterUrl("https://images.cloudinary.com/default-movie-poster.jpg");
+            targetMovie.setPosterUrl(imageService.uploadImage(posterFile));
         }
 
-        // 2. Actors and Actor Images Upload (Cloudinary)
-        if (actorNames != null && !actorNames.isEmpty() && actorFiles != null) {
-            List<String> actorImageUrls = new ArrayList<>();
-            for (MultipartFile file : actorFiles) {
-                if (file != null && !file.isEmpty()) {
-                    actorImageUrls.add(imageService.uploadImage(file));
+        // 3. Actors and Actor Images Upload
+        if (actorNames != null && !actorNames.isEmpty()) {
+            targetMovie.setActorNames(actorNames);
+
+            // புதிய ஆக்டர் இமேஜ்கள் வந்தால் மட்டும் அப்டேட் செய்ய
+            if (actorFiles != null && !actorFiles.isEmpty()) {
+                List<String> actorImageUrls = new ArrayList<>();
+                for (MultipartFile file : actorFiles) {
+                    if (file != null && !file.isEmpty()) {
+                        actorImageUrls.add(imageService.uploadImage(file));
+                    }
                 }
+                targetMovie.setActorImages(actorImageUrls);
             }
-            movie.setActorNames(actorNames);
-            movie.setActorImages(actorImageUrls);
         }
 
-        return movieRepository.save(movie);
+        return movieRepository.save(targetMovie);
     }
 
     // மற்ற மெத்தடுகள் அப்படியே இருக்கட்டும்...
