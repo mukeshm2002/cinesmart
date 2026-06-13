@@ -106,7 +106,7 @@ public class UserController {
     @Transactional
     public String cancelTicket(@PathVariable("bookingId") Long bookingId, Principal principal) {
         User user = userService.findUserByEmail(principal.getName());
-        Booking booking = bookingService.getBookingsByuser(bookingId);
+        Booking booking = bookingService.getBookingById(bookingId);
 
         if (booking != null && booking.getUser().getId().equals(user.getId())) {
             bookingService.cancelBookingInstantly(bookingId);
