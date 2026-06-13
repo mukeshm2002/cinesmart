@@ -16,21 +16,28 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    // EmailService.java-வில் இந்த மாற்றத்தைச் செய்யவும்
+    // SendGrid-ல் வெரிஃபை செய்த மெயில் முகவரி
+    private static final String SENDER_EMAIL = "projectjcu21@gmail.com";
+
     public void sendWelcomeEmail(String toEmail, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("your-email@gmail.com");
-        message.setTo(toEmail);
-        message.setSubject("Welcome to CineSmart! - OTP Verification");
-        message.setText("வணக்கம்! CineSmart-ல் இணைந்தமைக்கு நன்றி. உங்கள் சரிபார்ப்பு குறியீடு (OTP): " + otp);
-        mailSender.send(message);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(SENDER_EMAIL);
+            message.setTo(toEmail);
+            message.setSubject("Welcome to CineSmart! - OTP Verification");
+            message.setText("வணக்கம்! CineSmart-ல் இணைந்தமைக்கு நன்றி. உங்கள் சரிபார்ப்பு குறியீடு (OTP): " + otp);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("!!! Welcome மின்னஞ்சல் அனுப்ப முடியவில்லை: " + e.getMessage());
+        }
     }
+
     public void sendTicketEmail(String toEmail, String subject, String body, String filePath) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setFrom("your-email@gmail.com");
+            helper.setFrom(SENDER_EMAIL);
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(body);
@@ -42,8 +49,7 @@ public class EmailService {
 
             mailSender.send(message);
         } catch (Exception e) {
-            // மின்னஞ்சல் அனுப்ப முடியவில்லை என்றாலும் புக்கிங் நிக்கக்கூடாது
-            System.err.println("Email sending failed, but booking is saved: " + e.getMessage());
+            System.err.println("Ticket மின்னஞ்சல் அனுப்ப முடியவில்லை: " + e.getMessage());
         }
     }
 }
