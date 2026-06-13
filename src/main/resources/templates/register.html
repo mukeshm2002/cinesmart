@@ -34,13 +34,14 @@
 <body>
 
 <div class="register-card">
+
+    <div th:if="${error}" class="alert alert-danger p-2 text-center small" th:text="${error}"></div>
+
     <div th:if="${param.step == null}">
         <div class="text-center mb-4">
             <h3 class="fw-bold">Create Account</h3>
             <p class="text-secondary small">Join CineSmart and book your shows</p>
         </div>
-
-        <div th:if="${error}" class="alert alert-danger p-2 text-center small" th:text="${error}"></div>
 
         <form th:action="@{/register}" th:object="${user}" method="post" id="regForm">
             <label>Full Name</label>
@@ -59,10 +60,8 @@
     <div th:if="${param.step != null and param.step[0] == 'otp'}">
         <div class="text-center mb-4">
             <h4 class="fw-bold">Verify Email</h4>
-            <p class="text-secondary small">Enter the 6-digit OTP sent to your email.</p>
+            <p class="text-secondary small">Enter the 6-digit OTP sent to your registered email.</p>
         </div>
-
-        <div th:if="${error}" class="alert alert-danger p-2 text-center small" th:text="${error}"></div>
 
         <form th:action="@{/verify-otp}" method="post" id="otpForm">
             <label>Enter 6-digit OTP</label>

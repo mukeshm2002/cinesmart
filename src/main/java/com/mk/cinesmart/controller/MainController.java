@@ -27,7 +27,8 @@ public class MainController {
     public String registerPage(@RequestParam(value = "step", required = false) String step,
                                Model model) {
         if ("otp".equals(step)) {
-            return "register-otp"; // தனி HTML பக்கம் இருப்பது சிறந்தது
+            // "register-otp" என்பதற்கு பதிலாக "register" என்றே கொடுங்கள்
+            return "register";
         }
         if (!model.containsAttribute("user")) {
             model.addAttribute("user", new User());

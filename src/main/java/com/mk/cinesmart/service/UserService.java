@@ -26,24 +26,29 @@ public class UserService {
         return email != null && userRepository.existsByEmail(email.toLowerCase());
     }
 
+    // UserService.java-வில் இந்த மாற்றத்தைச் செய்யவும்
     public String prepareTempRegistration(User user, HttpSession session) {
         String normalizedEmail = user.getEmail().toLowerCase();
         user.setEmail(normalizedEmail);
 
-        // ஏற்கனவே செஷனில் யூசர் இருந்தால், அதை லாக் செய்துவிடலாம் (Security)
-        session.invalidate();
-        HttpSession newSession = session; // புதிய செஷன் உருவாக்கி தொடரவும்
+        // செஷனைinvalidate செய்வதற்கு முன் அது செல்லுபடியாக உள்ளதா என சரிபார்க்கவும்
+        try {
+            session.invalidate();
+        } catch (IllegalStateException e) {
+            // செஷன் ஏற்கனவே காலாவதியாகி இருந்தால் அதை ஒன்றும் செய்ய வேண்டாம்
+        }
 
+        // புதிய செஷன் உருவாக்கத் தேவையில்லை, அதே HttpSession ஆப்ஜெக்ட்டை அப்படியே பயன்படுத்தலாம்
         String otp = String.format("%06d", new Random().nextInt(1000000));
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.ROLE_USER);
         user.setVerified(false);
 
-        newSession.setMaxInactiveInterval(5 * 60);
-        newSession.setAttribute("tempUser", user);
-        newSession.setAttribute("tempOtp", otp);
-        newSession.setAttribute("tempEmail", normalizedEmail);
+        session.setMaxInactiveInterval(5 * 60);
+        session.setAttribute("tempUser", user);
+        session.setAttribute("tempOtp", otp);
+        session.setAttribute("tempEmail", normalizedEmail);
 
         try {
             emailService.sendWelcomeEmail(normalizedEmail, otp);
